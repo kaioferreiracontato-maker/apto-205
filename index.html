@@ -153,7 +153,8 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
         <div class="row"><button class="btn" id="btn-clear">Ver tudo</button>
           <button class="btn" id="btn-furn2d" aria-pressed="true">Móveis</button>
           <button class="btn" id="btn-dims2d" aria-pressed="false">Dimensões</button>
-          <button class="btn" id="btn-gaps2d" aria-pressed="false">Passagens</button></div>
+          <button class="btn" id="btn-gaps2d" aria-pressed="false">Passagens</button>
+          <button class="btn" id="btn-extras2d" aria-pressed="false">Cadeiras extras</button></div>
       </section>
 
       <section id="sec-view" hidden>
@@ -187,6 +188,7 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
         <label class="chk"><input type="checkbox" id="chk-furn" checked> Móveis</label>
         <label class="chk"><input type="checkbox" id="chk-dims"> Mostrar dimensões</label>
         <label class="chk"><input type="checkbox" id="chk-gaps"> Mostrar passagens (espaço livre no chão)</label>
+        <label class="chk"><input type="checkbox" id="chk-extras"> Mostrar cadeiras extras</label>
         <label class="chk"><input type="checkbox" id="chk-auto" checked> Esconder o que fica na frente</label>
         <label class="chk"><input type="checkbox" id="chk-cut"> Cortar paredes a 1,20 m</label>
         <label class="chk"><input type="checkbox" id="chk-doors" checked> Portas dos quartos e banheiros fechadas</label>
@@ -233,6 +235,7 @@ var DESC = {
   origC: 'Opção A2. Mesma parede da A, com a sala reorganizada. Ripado de madeira de 1,10 m logo depois da porta, servindo de encosto para o banco do jantar; o banco segue em L pela parede até perto do sofá, com mesa oval de 1,20 × 0,76 m no sentido do sofá e uma cadeira estofada do lado livre. Sofá-cama de 2,10 m na mesma parede e, na varanda, o banco na cor do sofá com o arco pintado atrás. Na parede do banheiro, estante aberta de tubos pretos com prateleiras de madeira de 28 cm; a prateleira a 0,75 m serve de mesa e os bancos cabem embaixo. Bancada da cozinha a 0,75 m, com dois bancos na altura de cadeira (assento a 47 cm), que também servem na mesa e na varanda. Móvel gourmet com cafeteira na parede do quarto. Pintura proposta: Castelo do Deserto nas paredes, Chocolate Quente na parede do sofá, na faixa do teto e no arco, Pomar Verde na parede da TV e no corredor inteiro. Na cozinha, ripado entre a bancada e a lava-roupas e Chocolate Quente na parede da bancada.',
   recuoA: 'Opção B. A parede entre o quarto e a sala recua 60 cm, alinhada com a parede do banheiro, só até a linha da varanda, e o nicho vira canto alemão. A TV de 50" vai para a parede do banheiro e o sofá-cama Marad de 2,10 m para a parede do vizinho. A sala ganha 0,60 m² e o quarto perde o mesmo. A porta do quarto fica de frente para a do banheiro.'
 };
+var showExtras = false;                            // duas cadeiras a mais no lado vazio da mesa, só quando tem visita
 function geometry(id){
   var recuo = id === 'recuoA';
   var walls = [
@@ -314,6 +317,8 @@ function geometry(id){
       {k:'plant',cx:4.13,cy:4.03,r:.11,h:.75},
       {k:'plant',cx:4.76,cy:6.04,r:.055,h:.24,z:.65},
       {k:'plant',cx:4.44,cy:1.78,r:.055,h:.22,z:1.05});
+    if (id === 'origC' && showExtras) mov.push(          // cadeiras extras no lado vazio da mesa, a 60 cm uma da outra
+      {k:'chair2',cx:5.54,cy:3.35,r:.22,ang:0,extra:true,nm:'Cadeira extra (assento a 0,47)'}, {k:'chair2',cx:5.54,cy:3.95,r:.22,ang:0,extra:true,nm:'Cadeira extra (assento a 0,47)'});
   } else {
     var A = id === 'recuoA';
     walls.push(
@@ -351,9 +356,11 @@ function geometry(id){
     if (bar){ gap(4.30,ky, 4.30,bar.y0); gap(bar.x1+.01,1.70, 5.45,1.70); }   // pia ↔ forno; ponta da bancada ↔ shaft
     if (rp) gap(6.5,1.75, 6.5,rp.y0);                                   // hall: porta de entrada ↔ ripado
     if (rp && dk) gap(dk.x1,2.82, rp.x0,2.82);                          // entrada da sala: estante ↔ banco do ripado
-    if (dk && ov) gap(dk.x1,ov.cy, ov.cx-ov.rx,ov.cy);                  // estante ↔ mesa de jantar
+    var ex = mov.filter(function(f){ return f.extra; })[0];
+    if (dk && ov && !ex) gap(dk.x1,ov.cy, ov.cx-ov.rx,ov.cy);           // estante ↔ mesa de jantar
     var hc = mov.filter(function(f){ return f.k === 'chair2' && f.cx < 5; })[0];
-    if (hc && ov){ var hdy = (hc.cy-ov.cy)/ov.ry, hxe = ov.cx - ov.rx*Math.sqrt(Math.max(0, 1-hdy*hdy)); gap(hc.cx+.23,hc.cy, hxe,hc.cy); }   // encosto da cadeira do computador ↔ mesa de jantar
+    if (hc && ex) gap(hc.cx+.23,ex.cy, ex.cx-.23,ex.cy);                // cadeira do computador ↔ cadeira extra (encosto com encosto)
+    else if (hc && ov){ var hdy = (hc.cy-ov.cy)/ov.ry, hxe = ov.cx - ov.rx*Math.sqrt(Math.max(0, 1-hdy*hdy)); gap(hc.cx+.23,hc.cy, hxe,hc.cy); }   // encosto da cadeira do computador ↔ mesa de jantar
     if (ov && sf && sf.y0 > ov.cy) gap(ov.cx,ov.cy+ov.ry, ov.cx,sf.y0); // mesa ↔ sofá
     var tp = mov.filter(function(f){ return f.k === 'ott'; })[0];
     if (tp && sf && sf.x0 > tp.x1){ var ym = Math.min(Math.max((tp.y0+tp.y1)/2, sf.y0+.25), sf.y1-.25); gap(tp.x1,ym, sf.x0,ym); }   // pufes da TV ↔ sofá
@@ -654,6 +661,9 @@ $('layout').addEventListener('change', function(){ setLayout(this.value); });
 $('chk-dims').addEventListener('change', function(){ setDims(this.checked); });
 $('btn-dims2d').addEventListener('click', function(){ setDims(!dimAll); });
 $('chk-gaps').addEventListener('change', function(){ setGaps(this.checked); });
+function setExtras(on){ showExtras = on; $('chk-extras').checked = on; $('btn-extras2d').setAttribute('aria-pressed', on); G = geometry(G.id); dimOn = {}; drawPlan(); if (three) three.rebuild(); }
+$('chk-extras').addEventListener('change', function(){ setExtras(this.checked); });
+$('btn-extras2d').addEventListener('click', function(){ setExtras(!showExtras); });
 $('btn-gaps2d').addEventListener('click', function(){ setGaps(!showGaps); });
 
 /* ---------- sol ---------- */
