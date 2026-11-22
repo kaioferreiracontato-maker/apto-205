@@ -171,6 +171,7 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
             <option value="cozinha">Cozinha</option>
             <option value="suite">Suíte</option>
             <option value="quarto">Quarto</option>
+            <option value="caminha">Caminha da cachorra</option>
           </select><span></span>
         </div>
         <div class="field" id="walk-start-field" hidden>
@@ -1026,7 +1027,8 @@ function init3d(){
     var st = autoState(), k = st ? st.sx + ',' + st.sy + $('focus').value : 'off';
     if (k !== autoKey){ autoKey = k; applyCut(); }
   }
-  var FOCUS = {tudo:[3.5,3.75,13.5], sala:[5.45,4.55,9.5], cozinha:[3.6,.9,8], suite:[1.2,3.3,8], quarto:[2.9,6.3,8]};
+  var FOCUS = {tudo:[3.5,3.75,13.5], sala:[5.45,4.55,9.5], cozinha:[3.6,.9,8], suite:[1.2,3.3,8], quarto:[2.9,6.3,8],
+    caminha:[6.5,7.06,1.7,-1.9,1.2,.25]};   // vista pronta: [x, y, distância, giro, inclinação, altura fixa da mira]
 
   /* --- tudo que depende do layout --- */
   function build(){
@@ -1645,7 +1647,12 @@ function init3d(){
 
   // câmera
   var mode = 'persp', night = false;
-  var orb = {tx:3.5, ty:.6, tz:3.75, theta:.42, phi:.52, r:13.5};
+  var orb = {tx:3.5, ty:.6, tz:3.75, theta:.42, phi:.52, r:13.5, fix:null};
+  function applyFocus(fo, reset){                  // posiciona a câmera da Maquete; vistas prontas trazem giro, inclinação e altura da mira
+    orb.tx = fo[0]; orb.tz = fo[1]; orb.r = fo[2];
+    if (fo.length > 3){ orb.theta = fo[3]; orb.phi = fo[4]; orb.fix = fo[5]; }
+    else { if (reset || orb.fix !== null){ orb.theta = .42; orb.phi = .52; } orb.fix = null; }
+  }
   var walk = {x:6.5, z:2.3, yaw:.12, pitch:-.06};
   var STARTS = { entrada:[6.5,2.3,.12], sala:[5.75,4.6,2.75], suite:[2.0,4.5,2.6], quarto:[2.6,6.25,1.3], varanda:[5.75,7.0,3.2] };
   var keys = {};
@@ -1656,7 +1663,7 @@ function init3d(){
       camera.lookAt(walk.x + Math.sin(walk.yaw)*cp, 1.6 + Math.sin(walk.pitch), walk.z + Math.cos(walk.yaw)*cp);
     } else {
       camera.fov = 42; var sp = Math.sin(orb.phi);
-      var oty = orb.ty + (1.5-orb.ty) * Math.max(0, Math.min(1, (10-orb.r)/5));   // de perto o ponto de mira sobe para a altura dos olhos (1,50 m): entrar no ambiente não deixa a câmera no chão
+      var oty = orb.fix !== null ? orb.fix : orb.ty + (1.5-orb.ty) * Math.max(0, Math.min(1, (10-orb.r)/5));   // de perto o ponto de mira sobe para a altura dos olhos (1,50 m): entrar no ambiente não deixa a câmera no chão
       camera.position.set(orb.tx + orb.r*sp*Math.sin(orb.theta), oty + orb.r*Math.cos(orb.phi), orb.tz + orb.r*sp*Math.cos(orb.theta));
       camera.lookAt(orb.tx, oty, orb.tz);
     }
@@ -1672,7 +1679,7 @@ function init3d(){
     return false;
   }
   function focusPolys(){                           // o que está sendo olhado: o apartamento inteiro ou um ambiente
-    var want = {sala:['Estar','Varanda'], cozinha:['Cozinha'], suite:['Suíte'], quarto:['Quarto']}[$('focus').value], ps = [];
+    var want = {sala:['Estar','Varanda'], caminha:['Estar','Varanda'], cozinha:['Cozinha'], suite:['Suíte'], quarto:['Quarto']}[$('focus').value], ps = [];
     if (want) G.rooms.forEach(function(r){ var nm = r.name.join(' '); if (want.some(function(w){ return nm.indexOf(w) === 0; })) ps.push(r.pts); });
     return ps.length ? ps : [FOOT];
   }
@@ -1736,8 +1743,8 @@ function init3d(){
   }
   function setMode(m){
     mode = m;
-    if (m === 'top'){ orb.theta = 0; orb.phi = .02; orb.r = 13; orb.tx = 3.5; orb.tz = 3.75; }
-    if (m === 'persp'){ var fo = FOCUS[$('focus').value]; orb.theta = .42; orb.phi = .52; orb.r = fo[2]; orb.tx = fo[0]; orb.tz = fo[1]; }
+    if (m === 'top'){ orb.theta = 0; orb.phi = .02; orb.r = 13; orb.tx = 3.5; orb.tz = 3.75; orb.fix = null; }
+    if (m === 'persp') applyFocus(FOCUS[$('focus').value], true);
     if (m === 'walk'){ var s = STARTS[$('walk-start').value]; var q = collide(s[0], s[1]); walk.x = q[0]; walk.z = q[1]; walk.yaw = s[2]; walk.pitch = -.06; }
     gLab.visible = m !== 'walk' && $('chk-labels').checked;
     gSky.visible = m === 'walk'; gLamp.visible = m !== 'top'; gLamp.children.forEach(function(c){ if (c.isMesh) c.visible = m === 'walk'; });
@@ -1815,7 +1822,7 @@ function init3d(){
   // controles do painel
   Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function(b){ b.addEventListener('click', function(){ setMode(b.getAttribute('data-view')); }); });
   $('walk-start').addEventListener('change', function(){ setMode('walk'); });
-  $('focus').addEventListener('change', function(){ var fo = FOCUS[this.value]; if (mode !== 'persp') setMode('persp'); else { orb.tx = fo[0]; orb.tz = fo[1]; orb.r = fo[2]; } });
+  $('focus').addEventListener('change', function(){ var fo = FOCUS[this.value]; if (mode !== 'persp') setMode('persp'); else applyFocus(fo, false); });
   $('chk-furn').addEventListener('change', function(){ gMov.visible = this.checked; renderer.shadowMap.needsUpdate = true; });
   $('chk-doors').addEventListener('change', function(){ build(); gMov.visible = $('chk-furn').checked; });
   $('chk-paint').addEventListener('change', function(){ applyPaint(); applyRoof(); });
