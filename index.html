@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Apto 205 Carmen Maria</title>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Apto 205 Carmen Maria</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
 <style>
@@ -415,7 +415,7 @@ var G = geometry('origC');
 
 /* ---------- medidas dos móveis: [nome, altura, altura do rótulo no 3D] ---------- */
 var KIND = {sofa:['Sofá-cama (assento a 0,46)',.66], bench:['Banco (assento a 0,47)',null], oval:['Mesa oval',null], table:['Mesa',.76], chair:['Cadeira (assento a 0,50)',.85],
-  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Móvel do café',.90],
+  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
   rack:['Aparador suspenso da TV',.62,1.0], ripado:['Ripado',2.5,2.2], round:['Mesa redonda',null], fridge:['Geladeira',1.86,2.05], washer:['Lava-roupas',.89],
   bed:['Cama',.50], wardrobe:['Guarda-roupa',2.40,2.2], rug:['Tapete',0], hang:['Prateleiras suspensas',0,2.25], kitchen:['Bancada da cozinha (pedra)',.90,1.15], dish:['Lava-louças Midea 8 serviços',.595,.62]};
 var dimAll = false, dimOn = {};
@@ -871,6 +871,22 @@ function init3d(){
   };
   TX.tile = tex(32, 96, function(g,w,h){ g.fillStyle = '#d9d5cc'; g.fillRect(0,0,w,h); g.fillStyle = '#f3f1ec'; g.fillRect(1,1,w-2,h-2); }, [24,7]);   // pastilha branca em pé, 5 × 15 cm
   M.splash = std({color:0xffffff, map:TX.tile, roughness:.35, env:.6});
+  TX.wicker = tex(64, 64, function(g,w,h){             // palha trançada dos cestos
+    g.fillStyle = '#b89a6c'; g.fillRect(0,0,w,h);
+    for (var y=0;y<h;y+=8) for (var x=0;x<w;x+=16){ var o = (y/8)%2 ? 8 : 0; g.fillStyle = '#d2b98c'; g.fillRect(x+o,y+1,7,6); g.fillStyle = '#9c7f55'; g.fillRect(x+o+8,y+1,7,6); g.fillStyle = 'rgba(70,50,25,.35)'; g.fillRect(x+o,y+7,16,1); }
+  }, [5,3]);
+  TX.cafe = tex(384, 528, function(g,w,h){             // quadro do cantinho do café
+    g.fillStyle = '#24272a'; g.fillRect(0,0,w,h);
+    g.fillStyle = '#f3eadb'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = 'italic 600 132px Georgia, "Times New Roman", serif'; g.fillText('café', w/2, 150);
+    g.fillRect(w/2-70, 244, 140, 3);
+    g.font = '500 34px system-ui, sans-serif';
+    ['ESPRESSO','COADO','CAPPUCCINO'].forEach(function(t, i){ g.fillText(t.split('').join(' '), w/2, 316 + i*62); });
+  });
+  M.wicker = std({color:0xffffff, map:TX.wicker, roughness:1, env:.2});
+  M.cafeSign = std({color:0xffffff, map:TX.cafe, roughness:.85, env:.2});
+  M.bean = std({color:0x2e1c12, roughness:.8, env:.2}); M.bean2 = std({color:0x6a442a, roughness:.8, env:.2});
+  M.glassC = std({color:0xf2f6f5, transparent:true, opacity:.3, roughness:.05, depthWrite:false, env:1.3});
   M.floor.polygonOffset = true; M.floor.polygonOffsetFactor = -1; M.floor.polygonOffsetUnits = -1;
   M.woodFloor.polygonOffset = true; M.woodFloor.polygonOffsetFactor = -2; M.woodFloor.polygonOffsetUnits = -2;
   var wallMats = [M.wallG, M.wallG, M.wallTop, M.wall, M.wallG, M.wallG];
@@ -1400,29 +1416,72 @@ function init3d(){
         vine(gMov, px, e0+.36, s3, d1+.008);
         glow(d1+.30, ec, 1.9, .18, 3);
       }
-      else if (f.k==='gourmet'){                   // cantinho do café: armário raso de madeira, tampo branco e duas prateleiras, na parede verde
-        var gx = f.x0, fx = f.x1, gy0 = f.y0, gy1 = f.y1, gm = (gy0+gy1)/2, ox = gx+.11;
-        box(gMov, gx+.03,gy0+.02,fx-.04,gy1-.02, 0,.08, M.woodDark, {cast:false});
-        box(gMov, gx+.012,gy0,fx-.02,gy1, .08,.86, M.wood);
-        w = (gy1-gy0)/3;
-        for (i=0;i<3;i++) box(gMov, fx-.02,gy0+i*w+.003,fx,gy0+(i+1)*w-.003, .083,.857, M.wood, {cast:false});
-        box(gMov, gx,gy0-.01,fx+.015,gy1+.01, .86,.90, M.white);                            // tampo branco
+      else if (f.k==='gourmet'){                   // cantinho do café: aparador aberto (tampo fino de madeira, pés finos de ferro, prateleira ripada com cestos) e prateleiras com louça de café
+        var gx = f.x0, fx = f.x1, gy0 = f.y0, gy1 = f.y1, gm = (gy0+gy1)/2, ox = gx+.11, tz = .90;
+        var mug = function(x, y, z, m){ cyl(gMov, x,y, .034, z,z+.075, m, {r2:.029, seg:14, cast:false}); box(gMov, x-.004,y+.032,x+.004,y+.05, z+.018,z+.06, m, {cast:false, cut:false}); };
+        var jar = function(x, y, z, r, h, fill){ cyl(gMov, x,y, r-.004, z,z+h*.72, fill, {seg:14, cast:false}); cyl(gMov, x,y, r, z,z+h, M.glassC, {seg:16, cast:false}); cyl(gMov, x,y, r+.002, z+h,z+h+.018, M.honey, {seg:16, cast:false}); };
+        box(gMov, gx,gy0,fx,gy1, tz-.035,tz, M.wood);                                       // tampo fino de madeira
+        [[fx-.03,gy0+.03],[fx-.03,gy1-.03],[gx+.025,gy0+.03],[gx+.025,gy1-.03]].forEach(function(q){ box(gMov, q[0]-.01,q[1]-.01,q[0]+.01,q[1]+.01, 0,tz-.035, M.iron); });   // pés finos de ferro
+        [tz-.055, .235].forEach(function(z){                                                // travessas: sob o tampo e na prateleira de baixo
+          box(gMov, fx-.04,gy0+.04,fx-.02,gy1-.04, z,z+.02, M.iron, {cast:false}); box(gMov, gx+.015,gy0+.04,gx+.035,gy1-.04, z,z+.02, M.iron, {cast:false});
+          box(gMov, gx+.035,gy0+.02,fx-.04,gy0+.04, z,z+.02, M.iron, {cast:false}); box(gMov, gx+.035,gy1-.04,fx-.04,gy1-.02, z,z+.02, M.iron, {cast:false});
+        });
+        for (i=0;i<4;i++) box(gMov, gx+.033+i*.068,gy0+.02,gx+.083+i*.068,gy1-.02, .255,.273, M.wood);   // prateleira de baixo ripada
+        [[gy0+.12,gy0+.54],[gy0+.66,gy0+1.08]].forEach(function(q){                         // dois cestos de palha com forro de linho
+          box(gMov, gx+.05,q[0],fx-.05,q[1], .273,.47, M.wicker);
+          box(gMov, gx+.044,q[0]-.006,fx-.044,q[1]+.006, .47,.488, M.wicker, {cast:false});
+          box(gMov, gx+.058,q[0]+.008,fx-.058,q[1]-.008, .48,.492, M.linen, {cast:false});
+        });
         var s1 = 1.30, s2 = 1.62, s3 = 1.94;         // três prateleiras desencontradas, presas em hastes finas que descem do teto
         hangUnit(gx, 1, .21, [[gy0+.02,gy1-.02,s1],[gy0+.02,gy0+.80,s2],[gy0+.02,gy1-.02,s3]],
           [[gy0+.73,s1-.03],[gy1-.08,s1-.03]]);
-        cy = gy1-.34;                                                                       // máquina de café e moedor
-        box(gMov, gx+.04,cy-.13,gx+.28,cy+.13, .90,1.20, M.steel);
-        box(gMov, gx+.24,cy-.07,gx+.30,cy+.07, 1.05,1.10, M.dark, {cast:false});
-        cyl(gMov, gx+.13,cy-.05, .05, 1.20,1.27, M.dark, {seg:14, cast:false});
-        cyl(gMov, gx+.13,cy-.30, .055, .90,1.12, M.dark, {seg:16}); cyl(gMov, gx+.13,cy-.30, .045, 1.12,1.20, M.glassG, {r2:.055, seg:16, cast:false});
-        plant(gMov, gx+.14, gy0+.22, .90, .05, .22);
-        box(gMov, gx+.02,gm-.20,gx+.045,gm-.04, .90,1.18, M.wood, {cast:false});
-        box(gMov, gx+.07,gm+.02,gx+.25,gm+.26, .90,.915, M.wood, {cast:false}); cyl(gMov, gx+.13,gm+.09, .035, .915,.99, M.white, {seg:12, cast:false}); cyl(gMov, gx+.19,gm+.19, .035, .915,.99, M.white, {seg:12, cast:false});
-        for (i=0;i<3;i++) cyl(gMov, ox, gm-.05+i*.11, .037, s1,s1+.08, M.white, {seg:12, cast:false});
-        cyl(gMov, ox, gy1-.10, .04, s1,s1+.14, M.vase, {seg:14, cast:false});
-        plant(gMov, ox, gy0+.10, s1, .05, .20);
-        box(gMov, gx+.04,gy0+.40,gx+.18,gy0+.64, s2,s2+.025, M.linen, {cast:false}); box(gMov, gx+.05,gy0+.42,gx+.17,gy0+.62, s2+.025,s2+.05, M.blanket, {cast:false});
+        cy = gy1-.34;                                                                       // máquina de espresso
+        box(gMov, gx+.03,cy-.13,gx+.19,cy+.13, tz,tz+.30, M.steel);
+        box(gMov, gx+.19,cy-.13,gx+.29,cy+.13, tz+.20,tz+.30, M.steel);
+        box(gMov, gx+.19,cy-.13,gx+.30,cy+.13, tz,tz+.025, M.dark, {cast:false});
+        box(gMov, gx+.19,cy-.10,gx+.193,cy+.10, tz+.05,tz+.18, M.dark, {cast:false, cut:false});
+        box(gMov, gx+.29,cy-.09,gx+.293,cy-.05, tz+.235,tz+.265, M.dark, {cast:false, cut:false}); box(gMov, gx+.29,cy+.05,gx+.293,cy+.09, tz+.235,tz+.265, M.led, {cast:false, cut:false});
+        cyl(gMov, gx+.24,cy, .028, tz+.165,tz+.20, M.chrome, {seg:14, cast:false}); cyl(gMov, gx+.24,cy, .032, tz+.14,tz+.165, M.chrome, {seg:14, cast:false});
+        rod(gMov, gx+.24,cy,tz+.152, gx+.30,cy+.085,tz+.145, .008, M.dark, {seg:8, cast:false});
+        rod(gMov, gx+.21,cy-.105,tz+.20, gx+.265,cy-.115,tz+.09, .004, M.chrome, {seg:6, cast:false});
+        cyl(gMov, gx+.24,cy, .028, tz+.025,tz+.085, M.white, {r2:.022, seg:14, cast:false});
+        cyl(gMov, gx+.13,cy-.30, .055, tz,tz+.20, M.dark, {seg:16});                         // moedor com funil de grãos
+        cyl(gMov, gx+.13,cy-.30, .05, tz+.20,tz+.27, M.bean, {r2:.03, seg:16, cast:false}); cyl(gMov, gx+.13,cy-.30, .06, tz+.20,tz+.30, M.glassC, {r2:.035, seg:16, cast:false});
+        cyl(gMov, gx+.13,cy-.30, .062, tz+.30,tz+.312, M.dark, {seg:16, cast:false});
+        plant(gMov, gx+.14, gy1-.10, tz, .05, .22);
+        cx = gx+.22; cy = gy0+.20;                                                          // coador de vidro (tipo Chemex) com café
+        cyl(gMov, cx,cy, .036, tz,tz+.05, M.bean, {r2:.052, seg:16, cast:false});
+        cyl(gMov, cx,cy, .022, tz,tz+.11, M.glassC, {r2:.058, seg:18, cast:false}); cyl(gMov, cx,cy, .05, tz+.11,tz+.20, M.glassC, {r2:.022, seg:18, cast:false});
+        cyl(gMov, cx,cy, .027, tz+.095,tz+.125, M.honey, {seg:14, cast:false});
+        jar(gx+.08, gy0+.10, tz, .042, .15, M.bean); jar(gx+.08, gy0+.21, tz, .042, .12, M.bean2); jar(gx+.08, gy0+.31, tz, .036, .09, M.pillow);   // potes: grãos, grãos, açúcar
+        box(gMov, gx+.11,gy0+.37,gx+.29,gy0+.62, tz,tz+.012, M.wood, {cast:false});          // bandeja com duas xícaras
+        [[gx+.16,gy0+.44],[gx+.23,gy0+.55]].forEach(function(q){ cyl(gMov, q[0],q[1], .05, tz+.012,tz+.02, M.white, {seg:16, cast:false}); cyl(gMov, q[0],q[1], .032, tz+.02,tz+.075, M.white, {r2:.022, seg:14, cast:false}); });
+        // canecas penduradas numa barra sob a primeira prateleira
+        var ry = gx+.135, rz = s1-.075;
+        rod(gMov, ry,gy0+.07,rz, ry,gy0+.49,rz, .004, M.iron, {seg:6, cast:false});
+        [gy0+.07, gy0+.49].forEach(function(y){ cyl(gMov, ry,y, .003, rz,s1-.03, M.iron, {seg:6, cast:false}); });
+        [M.white, M.terra, M.sage, M.white].forEach(function(m, k){
+          var y = gy0+.13+k*.10;
+          cyl(gMov, ry,y, .034, rz-.105,rz-.03, m, {r2:.029, seg:14, cast:false});
+          box(gMov, ry-.004,y-.012,ry+.004,y+.012, rz-.03,rz-.004, m, {cast:false, cut:false});
+        });
+        // primeira prateleira: plantinha, potes de grãos, pilhas de xícaras e o quadro do café
+        plant(gMov, ox, gy0+.10, s1, .045, .18);
+        jar(ox, gy0+.24, s1, .04, .13, M.bean); jar(ox, gy0+.34, s1, .04, .13, M.bean2);
+        [gy0+.50, gy0+.60].forEach(function(y, k){ for (i=0;i<2+k;i++) cyl(gMov, ox,y, .036, s1+i*.045,s1+i*.045+.055, M.white, {r2:.026, seg:14, cast:false}); });
+        mug(ox, gy0+.71, s1, M.terra);
+        var qy = gy1-.24, qz = s1+.005;                                                     // quadro "café" apoiado na prateleira
+        box(gMov, gx+.004,qy-.135,gx+.02,qy+.135, qz,qz+.36, M.wood, {cast:false});
+        var sg = new T.Mesh(new T.PlaneGeometry(.24, .33), M.cafeSign); sg.rotation.y = Math.PI/2; sg.position.set(gx+.0212, qz+.18, qy); sg.userData.shared = false; gMov.add(sg);
+        // segunda prateleira: prensa francesa, moka e livros
         plant(gMov, ox, gy0+.12, s2, .05, .20);
+        cyl(gMov, ox,gy0+.27, .034, s2,s2+.07, M.bean, {seg:14, cast:false}); cyl(gMov, ox,gy0+.27, .038, s2,s2+.15, M.glassC, {seg:16, cast:false});      // prensa francesa
+        cyl(gMov, ox,gy0+.27, .04, s2+.15,s2+.165, M.chrome, {seg:16, cast:false}); cyl(gMov, ox,gy0+.27, .004, s2+.165,s2+.21, M.chrome, {seg:6, cast:false}); cyl(gMov, ox,gy0+.27, .012, s2+.21,s2+.225, M.dark, {seg:10, cast:false});
+        cyl(gMov, ox,gy0+.40, .028, s2,s2+.075, M.steel, {r2:.042, seg:8, cast:false}); cyl(gMov, ox,gy0+.40, .04, s2+.075,s2+.155, M.steel, {r2:.028, seg:8, cast:false});   // moka
+        cyl(gMov, ox,gy0+.40, .012, s2+.155,s2+.172, M.dark, {seg:8, cast:false});
+        box(gMov, gx+.04,gy0+.50,gx+.18,gy0+.72, s2,s2+.025, M.linen, {cast:false}); box(gMov, gx+.05,gy0+.52,gx+.17,gy0+.70, s2+.025,s2+.05, M.terra, {cast:false});
+        mug(ox, gy0+.61, s2+.05, M.white);
+        // prateleira do alto, que continua a da TV
         cyl(gMov, ox, gy1-.12, .07, s3,s3+.06, M.vase, {r2:.045, seg:16, cast:false});
         cyl(gMov, ox, gy1-.55, .05, s3,s3+.14, M.pot, {r2:.04, seg:14, cast:false});
         cyl(gMov, ox, gy1-.68, .04, s3,s3+.10, M.terra, {seg:14, cast:false});
@@ -1577,7 +1636,7 @@ function init3d(){
 
   // câmera
   var mode = 'persp', night = false;
-  var orb = {tx:3.5, ty:.6, tz:3.75, theta:.42, phi:.80, r:13.5};
+  var orb = {tx:3.5, ty:.6, tz:3.75, theta:.42, phi:.52, r:13.5};
   var walk = {x:6.5, z:2.3, yaw:.12, pitch:-.06};
   var STARTS = { entrada:[6.5,2.3,.12], sala:[5.75,4.6,2.75], suite:[2.0,4.5,2.6], quarto:[2.6,6.25,1.3], varanda:[5.75,7.0,3.2] };
   var keys = {};
@@ -1668,7 +1727,7 @@ function init3d(){
   function setMode(m){
     mode = m;
     if (m === 'top'){ orb.theta = 0; orb.phi = .02; orb.r = 13; orb.tx = 3.5; orb.tz = 3.75; }
-    if (m === 'persp'){ var fo = FOCUS[$('focus').value]; orb.theta = .42; orb.phi = .80; orb.r = fo[2]; orb.tx = fo[0]; orb.tz = fo[1]; }
+    if (m === 'persp'){ var fo = FOCUS[$('focus').value]; orb.theta = .42; orb.phi = .52; orb.r = fo[2]; orb.tx = fo[0]; orb.tz = fo[1]; }
     if (m === 'walk'){ var s = STARTS[$('walk-start').value]; var q = collide(s[0], s[1]); walk.x = q[0]; walk.z = q[1]; walk.yaw = s[2]; walk.pitch = -.06; }
     gLab.visible = m !== 'walk' && $('chk-labels').checked;
     gSky.visible = m === 'walk'; gLamp.visible = m !== 'top'; gLamp.children.forEach(function(c){ if (c.isMesh) c.visible = m === 'walk'; });
