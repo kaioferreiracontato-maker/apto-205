@@ -304,6 +304,7 @@ function geometry(id){
       {k:'hang',x0:6.73,y0:2.75,x1:6.95,y1:4.40,dir:-1,nm:'Prateleiras sobre a mesa',decor:true,
        shelves:[[2.75,3.80,1.62],[3.40,4.40,2.00]], frames:[[2.83,1.59],[3.72,1.59],[4.32,1.97]]},
       {k:'pendant',type:'bar',cx:6.22,cy:3.63,len:.90,z:1.52,dir:'y'},
+      {k:'panels',xw:6.95,ya:sy+.17,yb:sy+1.07},
       {k:'desk',x0:3.95,y0:2.60,x1:4.23,y1:3.90},
       {k:'gourmet',x0:4.55,y0:6.25,x1:4.87,y1:7.45},
       {k:'bench',x0:6.41,y0:6.65,x1:6.86,y1:7.47,back:'x1',bh:.66,pillows:true,pet:true,nm:'Banco da varanda (assento a 0,47, caminha embaixo)'},
@@ -478,7 +479,7 @@ function drawPlan(){
   G.ops.forEach(function(op){ if (op.type !== 'win') o += R(op,'p-room'); });
   FIX.forEach(function(f){ o += R(f, f.k==='glass' ? 'p-thin' : 'p-fix'); });
   if (showFurn2d) G.mov.forEach(function(f){
-    if (f.k === 'pendant' || f.k === 'rug' || f.k === 'hang') return;
+    if (f.k === 'pendant' || f.k === 'rug' || f.k === 'hang' || f.k === 'panels') return;
     if (f.k === 'ac'){ o += R(f,'p-thin'); return; }
     if (f.rx) o += '<ellipse class="p-mov" cx="'+f.cx*S+'" cy="'+f.cy*S+'" rx="'+f.rx*S+'" ry="'+f.ry*S+'"/>';
     else if (f.cx !== undefined) o += '<circle class="p-mov" cx="'+f.cx*S+'" cy="'+f.cy*S+'" r="'+f.r*S+'"/>';
@@ -898,6 +899,7 @@ function init3d(){
   }, [11,9]);
   M.net = std({color:0xffffff, map:TX.net, alphaTest:.45, side:T.DoubleSide, roughness:1, env:.15});
   M.rope = std({color:0xb4492f, roughness:1, env:.15});
+  M.panel = std({color:0xa7b592, roughness:1, env:.2});   // tecido verde dos painéis da parede do sofá
   M.cafeSign = std({color:0xffffff, map:TX.cafe, roughness:.85, env:.2});
   M.bean = std({color:0x2e1c12, roughness:.8, env:.2}); M.bean2 = std({color:0x6a442a, roughness:.8, env:.2});
   M.glassC = std({color:0xf2f6f5, transparent:true, opacity:.3, roughness:.05, depthWrite:false, env:1.3});
@@ -1534,6 +1536,31 @@ function init3d(){
         PC(.14,pd-.10, .025, .75,.86, M.terra, {seg:12, cast:false}); PC(.21,pd-.08, .02, .75,.82, M.vase, {seg:12, cast:false});
         PB(.28,pd-.16,.44,pd-.05, .75,.765, M.stone, {cast:false});
       }
+      else if (f.k==='panels'){                    // parede do sofá: dois painéis estofados verdes de cantos orgânicos, com luz por trás, e três prateleiras de madeira desencontradas
+        var panel = function(y0, y1, z0, z1, rr){      // rr = raios [cima-esq, cima-dir, baixo-dir, baixo-esq], vistos da sala
+          var w = y1-y0, h = z1-z0, mk = function(d){
+            var sh = new T.Shape(), a = rr[0], b = rr[1], c = rr[2], e = rr[3];
+            sh.moveTo(e-d*0, -d); sh.lineTo(w-c, -d); sh.quadraticCurveTo(w+d, -d, w+d, c); sh.lineTo(w+d, h-b); sh.quadraticCurveTo(w+d, h+d, w-b, h+d);
+            sh.lineTo(a, h+d); sh.quadraticCurveTo(-d, h+d, -d, h-a); sh.lineTo(-d, e); sh.quadraticCurveTo(-d, -d, e, -d); return sh;
+          };
+          var glowM = new T.Mesh(new T.ShapeGeometry(mk(.022), 18), M.led); glowM.rotation.y = -Math.PI/2; glowM.position.set(f.xw-.006, z0, y0); gMov.add(glowM);
+          var pm = new T.Mesh(new T.ExtrudeGeometry(mk(0), {depth:.03, bevelEnabled:false, curveSegments:18}), M.panel); pm.rotation.y = -Math.PI/2; pm.position.set(f.xw-.008, z0, y0); pm.castShadow = true; pm.receiveShadow = true; gMov.add(pm);
+        };
+        var qa = f.ya, qb = f.yb, sx0 = f.xw-.19, sx1 = f.xw, ox2 = f.xw-.10;
+        panel(qa, qa+.78, .82, 2.06, [.06,.46,.06,.06]);
+        panel(qb, qb+.70, .82, 1.86, [.08,.08,.08,.40]);
+        [[1.90, qa+.33, qb+.80], [1.60, qa-.12, qb+.33], [1.30, qa+.38, qb+.80]].forEach(function(q){ box(gMov, sx0,q[1],sx1,q[2], q[0]-.035,q[0], M.wood); });
+        cyl(gMov, ox2,qb+.20, .035, 1.90,2.02, M.terra, {r2:.05, seg:14, cast:false}); cyl(gMov, ox2,qb+.20, .02, 2.02,2.06, M.terra, {r2:.035, seg:12, cast:false});
+        cyl(gMov, ox2,qb+.36, .045, 1.90,2.00, M.vase, {r2:.055, seg:14, cast:false});
+        plant(gMov, ox2, qa+.02, 1.60, .05, .22);
+        cyl(gMov, ox2,qa+.62, .04, 1.60,1.69, M.pot, {r2:.05, seg:14, cast:false}); cyl(gMov, ox2,qa+.76, .035, 1.60,1.74, M.terra, {r2:.045, seg:14, cast:false});
+        box(gMov, ox2-.07,qb+.44,ox2+.07,qb+.66, 1.30,1.325, M.linen, {cast:false}); box(gMov, ox2-.06,qb+.46,ox2+.06,qb+.64, 1.325,1.35, M.terra, {cast:false});
+        [qa+.62, qa+.74].forEach(function(y, k){                                   // dois pássaros de latão
+          cyl(gMov, ox2,y, .022, 1.30,1.306, M.gold, {seg:12, cast:false}); cyl(gMov, ox2,y, .003, 1.306,1.39+k*.03, M.gold, {seg:6, cast:false});
+          var bd = new T.Mesh(new T.SphereGeometry(.022, 10, 8), M.gold); bd.scale.set(.7, .8, 1.5); bd.position.set(ox2, 1.405+k*.03, y); gMov.add(bd);
+        });
+        glow(f.xw-.35, (qa+qb+.70)/2, 1.45, .16, 2.6);
+      }
       else if (f.k==='swing'){                     // rede cadeira Sintonia: trama terracota pendurada numa barra de madeira, duas cordas até o gancho e extensão até o teto
         var wcx = (f.x0+f.x1)/2, wcy = (f.y0+f.y1)/2, wl = (f.x1-f.x0)/2, wd = (f.y1-f.y0)/2, zb = 1.38, za = 1.95, zs = .45;
         rod(gMov, f.x0,wcy,zb, f.x1,wcy,zb, .016, M.honey, {seg:12});                                   // barra de madeira
@@ -1614,11 +1641,9 @@ function init3d(){
           cyl(gMov, hx,q1[1]-.42, .04, q1[2],q1[2]+.07, M.white, {seg:14, cast:false}); cyl(gMov, hx,q1[1]-.52, .04, q1[2],q1[2]+.07, M.white, {seg:14, cast:false});
         }
       }
-      else if (f.k==='rack'){                      // parede da TV: faixa de ripado, TV, prateleira comprida no alto e aparador suspenso embaixo, ligados por hastes finas
+      else if (f.k==='rack'){                      // parede da TV (lisa, sem ripado): TV, prateleira comprida no alto e aparador suspenso embaixo, ligados por hastes finas
         cy = f.tvc === undefined ? (f.y0+f.y1)/2 : f.tvc;
         var rw = .42, rq = Math.round(rw/.05), sz = 1.94, lz = .62, sx = f.x0+.105;
-        box(gMov, f.x0,f.y0,f.x0+.008,f.y0+rw, 0,H, M.woodDark, {cast:false});
-        for (i=0;i<rq;i++) box(gMov, f.x0+.008,f.y0+.012+i*.05,f.x0+.036,f.y0+.012+i*.05+.03, 0,H, M.wood, {cast:false});
         box(gMov, f.x0+.04,cy-.555,f.x0+.078,cy+.555, 1.0,1.63, M.screen);
         box(gMov, f.x0+.078,cy-.54,f.x0+.08,cy+.54, 1.015,1.615, M.tvglass, {cast:false});
         hangUnit(f.x0, 1, .21, [[f.y0,f.y1,sz]], [[f.y0+.04,lz],[f.y1-.05,lz]]);
