@@ -309,7 +309,7 @@ function geometry(id){
       {k:'bench',x0:6.41,y0:6.65,x1:6.86,y1:7.47,back:'x1',bh:.66,pillows:true,pet:true,nm:'Banco da varanda (assento a 0,47, caminha embaixo)'},
       {k:'pendant',type:'globe',cx:6.62,cy:7.03,z:1.70},
       {k:'pendant',type:'sconce',cx:6.86,cy:6.74,z:1.42},
-      {k:'swing',x0:5.15,y0:6.755,x1:6.05,y1:7.305},   // rede cadeira Sintonia (Tok&Stok): barra de 0,90 m (estimada pela foto; a ficha permite até 1,25) paralela ao guarda-corpo, 0,55 de fundo, 1,50 de altura pendurada
+      {k:'swing',x0:5.15,y0:6.73,x1:6.05,y1:7.25},   // cadeira suspensa de lona verde-militar (Amazon B0GR8RDSLC): barra de madeira de 0,90, assento 0,55 × 0,53, encosto 0,67, 1,20 de altura total
       {k:'plant',cx:4.13,cy:4.03,r:.11,h:.75},
       {k:'plant',cx:4.76,cy:6.04,r:.055,h:.24,z:.65},
       {k:'plant',cx:4.44,cy:1.78,r:.055,h:.22,z:1.05});
@@ -422,7 +422,7 @@ var G = geometry('origC');
 
 /* ---------- medidas dos móveis: [nome, altura, altura do rótulo no 3D] ---------- */
 var KIND = {sofa:['Sofá-cama (assento a 0,46)',.66], bench:['Banco (assento a 0,47)',null], oval:['Mesa oval',null], table:['Mesa',.76], chair:['Cadeira (assento a 0,50)',.85],
-  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], ott:['Pufe (apoio de pés)',.42], chair2:['Cadeira de encosto de madeira (assento a 0,47)',.80], swing:['Rede cadeira Sintonia (barra a 1,38)',1.38,1.75], ac:['Ar-condicionado split (0,80 × 0,29, a 2,12 do piso)',0,2.6], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
+  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], ott:['Pufe (apoio de pés)',.42], chair2:['Cadeira de encosto de madeira (assento a 0,47)',.80], swing:['Cadeira suspensa de lona (barra a 1,10)',1.10,1.65], ac:['Ar-condicionado split (0,80 × 0,29, a 2,12 do piso)',0,2.6], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
   rack:['Aparador suspenso da TV',.62,1.0], ripado:['Ripado',2.5,2.2], round:['Mesa redonda',null], fridge:['Geladeira',1.86,2.05], washer:['Lava-roupas',.89],
   bed:['Cama',.50], wardrobe:['Guarda-roupa',2.40,2.2], rug:['Tapete',0], hang:['Prateleiras suspensas',0,2.25], kitchen:['Bancada da cozinha (pedra)',.90,1.15], dish:['Lava-louças Midea 8 serviços',.595,.62]};
 var dimAll = false, dimOn = {};
@@ -898,6 +898,7 @@ function init3d(){
   }, [11,9]);
   M.net = std({color:0xffffff, map:TX.net, alphaTest:.45, side:T.DoubleSide, roughness:1, env:.15});
   M.rope = std({color:0xb4492f, roughness:1, env:.15});
+  M.canvas = std({color:0x5b6a45, map:TX.fabric, roughness:1, env:.15, side:T.DoubleSide}); M.rope2 = std({color:0x4f5c3c, roughness:1, env:.15});   // lona verde-militar da cadeira suspensa
   TX.hedge = tex(256, 256, function(g,w,h){            // folhagem fechada do muro inglês
     g.fillStyle = '#2b4727'; g.fillRect(0,0,w,h);
     var cs = ['#35612f','#447a3b','#55904a','#2c5229','#67a257','#3d6e36'];
@@ -1581,20 +1582,22 @@ function init3d(){
         });
         glow(f.xw-.35, (qa+qb+.70)/2, 1.45, .16, 2.6);
       }
-      else if (f.k==='swing'){                     // rede cadeira Sintonia: trama terracota pendurada numa barra de madeira, duas cordas até o gancho e extensão até o teto
-        var wcx = (f.x0+f.x1)/2, wcy = (f.y0+f.y1)/2, wl = (f.x1-f.x0)/2, wd = (f.y1-f.y0)/2, zb = 1.38, za = 1.95, zs = .45;
-        rod(gMov, f.x0,wcy,zb, f.x1,wcy,zb, .016, M.honey, {seg:12});                                   // barra de madeira
-        rod(gMov, f.x0+.05,wcy,zb, wcx,wcy,za, .008, M.rope, {seg:6}); rod(gMov, f.x1-.05,wcy,zb, wcx,wcy,za, .008, M.rope, {seg:6});
-        cyl(gMov, wcx,wcy, .005, za,H, M.iron, {seg:6}); cyl(gMov, wcx,wcy, .014, za-.02,za+.03, M.iron, {seg:10, cast:false}); cyl(gMov, wcx,wcy, .05, H-.025,H, M.iron, {seg:16, cast:false});
-        var nb = new T.Mesh(new T.SphereGeometry(1, 24, 14, 0, Math.PI, Math.PI/2, Math.PI/2), M.net);   // costas e fundo da trama
-        nb.scale.set(wl-.03, zb-zs, wd+.02); nb.position.set(wcx, zb, wcy); gMov.add(nb);
-        var nf = new T.Mesh(new T.SphereGeometry(1, 24, 8, Math.PI, Math.PI, 2.25, Math.PI-2.25), M.net); // frente baixa, por onde se senta
-        nf.scale.set(wl-.03, zb-zs, wd+.02); nf.position.set(wcx, zb, wcy); gMov.add(nf);
-        var lz = zb + (zb-zs)*Math.cos(2.25);
-        [-1,1].forEach(function(sg){
-          rod(gMov, wcx+sg*(wl-.04),wcy,zb, wcx+sg*(wl-.03)*.78,wcy-(wd+.02)*.45,lz, .006, M.rope, {seg:6, cast:false});
-          rod(gMov, wcx+sg*(wl-.04),wcy,zb, wcx+sg*(wl-.03)*.60,wcy-(wd+.02)*.62,lz, .005, M.rope, {seg:6, cast:false});
+      else if (f.k==='swing'){                     // cadeira suspensa de lona verde-militar com franjas: barra de madeira de 0,90, encosto 0,67 e assento 0,55 × 0,53, cordas até o gancho
+        var wcx = (f.x0+f.x1)/2, wby = f.y0+.30, wl = (f.x1-f.x0)/2, zb = 1.10, za = 1.58, fw = .55;
+        var sg = new T.Group(); sg.position.set(wcx, 0, wby); gMov.add(sg);   // local: x = largura, z = de trás (+, guarda-corpo) para a frente (-, sala)
+        var seg = function(v1, z1, v2, z2){
+          var dv = v2-v1, dz = z2-z1, ln = Math.hypot(dv, dz), me = new T.Mesh(new T.BoxGeometry(fw, .012, ln+.01), M.canvas);
+          me.position.set(0, (z1+z2)/2, (v1+v2)/2); me.rotation.x = Math.atan2(-dz, dv); me.castShadow = true; me.receiveShadow = true; sg.add(me);
+        };
+        seg(.015, zb-.02, .12, .78); seg(.12, .78, .20, .50);              // encosto: da barra até o fundo do assento (0,67)
+        seg(.20, .50, .02, .43); seg(.02, .43, -.17, .44); seg(-.17, .44, -.32, .52);   // assento com a barriga da lona (0,53)
+        rod(sg, -wl+.01,0,zb, wl-.01,0,zb, .018, M.honey, {seg:12});                      // barra de madeira de 0,90
+        [-1,1].forEach(function(k){
+          rod(sg, k*(fw/2-.01),-.32,.52, k*(wl-.05),0,zb, .006, M.rope2, {seg:6});        // cordas da frente do assento até as pontas da barra
+          rod(sg, k*(wl-.03),0,zb, 0,0,za, .007, M.rope2, {seg:6});                       // cordas da barra até o gancho
         });
+        for (i=0;i<15;i++){ var fu = -fw/2+.02+i*(fw-.04)/14; box(sg, fu-.003,-.324,fu+.003,-.318, .41+(i%2)*.015,.52, M.canvas, {cast:false, cut:false}); }   // franjas
+        cyl(gMov, wcx,wby, .005, za,H, M.iron, {seg:6}); cyl(gMov, wcx,wby, .016, za-.02,za+.03, M.iron, {seg:10, cast:false}); cyl(gMov, wcx,wby, .05, H-.025,H, M.iron, {seg:16, cast:false});
       }
       else if (f.k==='ac'){                        // split na parede do sofá, virado para a sala
         var az = f.z, at = f.z+f.hh;
