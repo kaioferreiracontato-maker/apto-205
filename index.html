@@ -287,7 +287,7 @@ function geometry(id){
     var sy = id === 'orig' ? 4.50 : 4.55;            // sofá-cama Marad: 2,10 × 0,88 m
     mov.push({k:'bed',x0:1.35,y0:5.10,x1:3.24,y1:5.90}, {k:'wardrobe',x0:3.86,y0:5.93,x1:4.40,y1:7.50,front:'x0'},
       {k:'rack',x0:4.55,y0:4.95,x1:4.83,y1:(id === 'origC' ? 6.27 : 6.20),tvc:sy+1.05},
-      {k:'ott',x0:4.58,y0:sy+.775,x1:5.03,y1:sy+1.325},
+      {k:'ott',x0:4.57,y0:sy+.57,x1:4.93,y1:sy+.95}, {k:'ott',x0:4.57,y0:sy+1.15,x1:4.93,y1:sy+1.53},
       {k:'rug',x0:4.98,y0:sy+.18,x1:6.22,y1:sy+1.92},
       {k:'sofa',x0:5.98,y0:sy,x1:6.86,y1:sy+2.10});
     if (id === 'orig') mov.push(
@@ -327,7 +327,7 @@ function geometry(id){
     ghost = [{x0:3.95,y0:4.95,x1:4.55,y1:5.10},{x0:4.40,y0:5.10,x1:4.55,y1:5.95}];
     mov.push({k:'wardrobe',x0:3.86,y0:6.12,x1:4.40,y1:7.50,front:'x0'},
       {k:'rack',x0:3.95,y0:2.58,x1:4.23,y1:4.08,tvc:3.50},
-      {k:'ott',x0:3.98,y0:3.225,x1:4.43,y1:3.775},
+      {k:'ott',x0:3.97,y0:3.02,x1:4.33,y1:3.40}, {k:'ott',x0:3.97,y0:3.60,x1:4.33,y1:3.98},
       {k:'sofa',x0:6.05,y0:2.62,x1:6.93,y1:4.72},
       {k:'bench',x0:3.95,y0:4.97,x1:4.40,y1:5.95},
       {k:'table',x0:4.46,y0:5.00,x1:5.16,y1:5.92},
@@ -416,7 +416,7 @@ var G = geometry('origC');
 
 /* ---------- medidas dos móveis: [nome, altura, altura do rótulo no 3D] ---------- */
 var KIND = {sofa:['Sofá-cama (assento a 0,46)',.66], bench:['Banco (assento a 0,47)',null], oval:['Mesa oval',null], table:['Mesa',.76], chair:['Cadeira (assento a 0,50)',.85],
-  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], ott:['Pufe (apoio de pés)',.46], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
+  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], ott:['Pufe (apoio de pés)',.42], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
   rack:['Aparador suspenso da TV',.62,1.0], ripado:['Ripado',2.5,2.2], round:['Mesa redonda',null], fridge:['Geladeira',1.86,2.05], washer:['Lava-roupas',.89],
   bed:['Cama',.50], wardrobe:['Guarda-roupa',2.40,2.2], rug:['Tapete',0], hang:['Prateleiras suspensas',0,2.25], kitchen:['Bancada da cozinha (pedra)',.90,1.15], dish:['Lava-louças Midea 8 serviços',.595,.62]};
 var dimAll = false, dimOn = {};
@@ -1521,15 +1521,15 @@ function init3d(){
         PC(.14,pd-.10, .025, .75,.86, M.terra, {seg:12, cast:false}); PC(.21,pd-.08, .02, .75,.82, M.vase, {seg:12, cast:false});
         PB(.28,pd-.16,.44,pd-.05, .75,.765, M.stone, {cast:false});
       }
-      else if (f.k==='ott'){                       // pufe único tipo almofadão, cantos bem redondos, no veludo e na altura do assento do sofá (0,46), com quatro pés de madeira abraçando os cantos: apoio de pés
-        var a0 = f.x0, a1 = f.x1, b0 = f.y0, b1 = f.y1, c0 = .07, c1 = .46, orr = .085;
+      else if (f.k==='ott'){                       // pufes pequenos tipo almofadão (0,38 × 0,36 × 0,42), cantos bem redondos, no veludo do sofá, com quatro pés de madeira abraçando os cantos: apoio de pés
+        var a0 = f.x0, a1 = f.x1, b0 = f.y0, b1 = f.y1, c0 = .06, c1 = .42, orr = .075;
         box(gMov, a0+orr,b0+orr,a1-orr,b1-orr, c0,c1, M.sofa, {cast:false});
         box(gMov, a0,b0+orr,a1,b1-orr, c0,c1-orr, M.sofa); box(gMov, a0+orr,b0,a1-orr,b1, c0,c1-orr, M.sofa);
         [[a0+orr,b0+orr,-1,-1],[a0+orr,b1-orr,-1,1],[a1-orr,b0+orr,1,-1],[a1-orr,b1-orr,1,1]].forEach(function(q){
           cyl(gMov, q[0],q[1], orr, c0,c1-orr, M.sofa, {seg:16, cast:false});
           var sp = new T.Mesh(new T.SphereGeometry(orr, 16, 10), M.sofa); sp.position.set(q[0], c1-orr, q[1]); sp.receiveShadow = true; gMov.add(sp);
-          var lg = new T.Mesh(new T.CylinderGeometry(.03, .05, .30, 4), M.honey), k = (orr+.012)*.7071;   // pé de madeira em forma de aleta
-          lg.rotation.y = Math.atan2(q[2], q[3]); lg.scale.set(1.5, 1, .5); lg.position.set(q[0]+q[2]*k, .15, q[1]+q[3]*k); lg.castShadow = true; lg.receiveShadow = true; gMov.add(lg);
+          var lg = new T.Mesh(new T.CylinderGeometry(.022, .038, .24, 4), M.honey), k = (orr+.009)*.7071;   // pé de madeira em forma de aleta
+          lg.rotation.y = Math.atan2(q[2], q[3]); lg.scale.set(1.5, 1, .5); lg.position.set(q[0]+q[2]*k, .12, q[1]+q[3]*k); lg.castShadow = true; lg.receiveShadow = true; gMov.add(lg);
         });
         rod(gMov, a0+orr,b0+orr,c1-orr, a1-orr,b0+orr,c1-orr, orr, M.sofa, {seg:16, cast:false}); rod(gMov, a0+orr,b1-orr,c1-orr, a1-orr,b1-orr,c1-orr, orr, M.sofa, {seg:16, cast:false});
         rod(gMov, a0+orr,b0+orr,c1-orr, a0+orr,b1-orr,c1-orr, orr, M.sofa, {seg:16, cast:false}); rod(gMov, a1-orr,b0+orr,c1-orr, a1-orr,b1-orr,c1-orr, orr, M.sofa, {seg:16, cast:false});
