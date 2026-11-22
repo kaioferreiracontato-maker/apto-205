@@ -1628,12 +1628,12 @@ function init3d(){
       }
       else if (f.k==='oval'){                      // mesa oval de pedra clara com pé central
         blob(gMov, f.cx-f.rx,f.cy-f.ry,f.cx+f.rx,f.cy+f.ry, .1);
-        if (f.tulip){                                // mesa branca de pé tulipa, redonda ou oval
+        if (f.tulip){                                // mesa de tampo branco e pé tulipa de madeira, redonda ou oval
           var tk = f.ry > f.rx ? {sz:f.ry/f.rx} : {sx:f.rx/f.ry}, tr = Math.min(f.rx, f.ry), tm = (f.ry > f.rx ? 1 : 0);
           var TO = function(o){ for (var kk in tk) o[kk] = tk[kk]; return o; }, TS = function(o){ for (var kk in tk) o[kk] = 1 + (tk[kk]-1)*.6; return o; };
           cyl(gMov, f.cx,f.cy, tr, f.h-.03,f.h, M.white, TO({r2:tr-.025, seg:48}));
-          cyl(gMov, f.cx,f.cy, .04, f.h-.14,f.h-.03, M.white, TS({r2:.15, seg:28, cast:false})); cyl(gMov, f.cx,f.cy, .04, .26,f.h-.14, M.white, TS({seg:20}));
-          cyl(gMov, f.cx,f.cy, .04, .03,.26, M.white, TS({r2:.21, seg:32})); cyl(gMov, f.cx,f.cy, .21, 0,.03, M.white, TS({r2:.24, seg:32, cast:false}));
+          cyl(gMov, f.cx,f.cy, .04, f.h-.14,f.h-.03, M.wood, TS({r2:.15, seg:28, cast:false})); cyl(gMov, f.cx,f.cy, .04, .26,f.h-.14, M.wood, TS({seg:20}));
+          cyl(gMov, f.cx,f.cy, .04, .03,.26, M.wood, TS({r2:.21, seg:32})); cyl(gMov, f.cx,f.cy, .21, 0,.03, M.wood, TS({r2:.24, seg:32, cast:false}));
           cyl(gMov, f.cx,f.cy, .13, f.h,f.h+.012, M.honey, {seg:28, cast:false});                    // bandeja com taças
           [[.05,.03],[-.05,.04],[0,-.06]].forEach(function(q){ cyl(gMov, f.cx+q[0],f.cy+q[1], .022, f.h+.012,f.h+.10, M.glassC, {r2:.012, seg:10, cast:false}); });
           return;
