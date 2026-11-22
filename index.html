@@ -37,7 +37,12 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;flex:1;min-
 .stage{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:6px;overflow:hidden;
   height:clamp(420px,82vh,940px);min-width:0}
 .stage > div{position:absolute;inset:0}
-#plan{width:100%;height:100%;display:block;touch-action:manipulation;cursor:crosshair}
+#plan{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#plan.drag{cursor:grabbing}
+.p-iso{fill:var(--paper);fill-opacity:.8;fill-rule:evenodd;pointer-events:none}
+.p-isoline{fill:none;stroke:var(--accent);stroke-width:2.4;pointer-events:none}
+#rooms-body tr[data-room]{cursor:pointer}
+#rooms-body tr.on td{color:var(--accent);font-weight:600}
 #c3d{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 #c3d:active{cursor:grabbing}
 .panel{display:flex;flex-direction:column;gap:18px;min-width:0;overflow:auto;max-height:clamp(420px,82vh,940px);padding-right:2px}
@@ -79,9 +84,6 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
 .p-dims{font:400 14px var(--font-body);fill:var(--muted);text-anchor:middle;font-variant-numeric:tabular-nums}
 .p-dimline{stroke:var(--muted);stroke-width:1.1;fill:none}
 .p-dimtxt{font:500 15px var(--font-body);fill:var(--ink);text-anchor:middle;font-variant-numeric:tabular-nums}
-.p-meas{stroke:var(--accent);stroke-width:2.4;fill:none}
-.p-measdot{fill:var(--accent)}
-.p-meastxt{font:600 17px var(--font-body);fill:var(--accent);text-anchor:middle;paint-order:stroke;stroke:var(--paper);stroke-width:6px;font-variant-numeric:tabular-nums}
 .p-gap{stroke:#17a394;stroke-width:1.8;fill:none}
 .p-gapw{stroke-dasharray:6 4}
 .p-gaptext{font:700 12.5px var(--font-body);fill:#17a394;text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3.5px;font-variant-numeric:tabular-nums}
@@ -115,7 +117,7 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
     <section class="stage" aria-label="Desenho">
       <div id="view-planta" role="tabpanel">
         <svg id="plan" viewBox="-70 -62 815 930" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Planta baixa do apartamento 205 em escala"></svg>
-        <div class="tip" id="plan-tip">Toque em dois pontos para medir</div>
+        <div class="tip" id="plan-tip">Arraste e dê zoom · toque num ambiente para isolar</div>
       </div>
       <div id="view-3d" role="tabpanel" hidden>
         <canvas id="c3d"></canvas>
@@ -147,9 +149,8 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
       </section>
 
       <section id="sec-measure">
-        <h2>Régua</h2>
-        <p>Toque em dois pontos da planta para medir a distância. A régua gruda nos cantos das paredes e anda de 5 em 5 cm.</p>
-        <div class="row"><button class="btn" id="btn-clear">Limpar medidas</button>
+        <h2>Planta</h2>
+        <div class="row"><button class="btn" id="btn-clear">Ver tudo</button>
           <button class="btn" id="btn-furn2d" aria-pressed="true">Móveis</button>
           <button class="btn" id="btn-dims2d" aria-pressed="false">Dimensões</button>
           <button class="btn" id="btn-gaps2d" aria-pressed="false">Passagens</button></div>
@@ -436,7 +437,7 @@ function drawTable(){
   var html = '';
   G.rooms.forEach(function(r){
     var c = r.changed ? ' class="n changed"' : ' class="n"';
-    html += '<tr><td>' + (r.table || r.name.join(' ')) + '</td><td class="n">' + f2(r.dims[0]) + ' × ' + f2(r.dims[1]) + ' m</td><td' + c + '>' + f2(r.area) + ' m²</td></tr>';
+    html += '<tr data-room="' + G.rooms.indexOf(r) + '"' + (G.rooms.indexOf(r) === iso ? ' class="on"' : '') + '><td>' + (r.table || r.name.join(' ')) + '</td><td class="n">' + f2(r.dims[0]) + ' × ' + f2(r.dims[1]) + ' m</td><td' + c + '>' + f2(r.area) + ' m²</td></tr>';
   });
   html += '<tr class="tot"><td>Área privativa</td><td class="n">com paredes</td><td class="n">49,66 m²</td></tr>';
   $('rooms-body').innerHTML = html;
@@ -444,7 +445,7 @@ function drawTable(){
 }
 
 /* ---------- planta 2D ---------- */
-var S = 100, svg = $('plan'), showFurn2d = true, measures = [], pending = null, hover = null, SNAP = [];
+var S = 100, svg = $('plan'), showFurn2d = true, iso = -1;
 function R(r, cls){ return '<rect class="'+cls+'" x="'+(r.x0*S).toFixed(1)+'" y="'+(r.y0*S).toFixed(1)+'" width="'+((r.x1-r.x0)*S).toFixed(1)+'" height="'+((r.y1-r.y0)*S).toFixed(1)+'"/>'; }
 function L(x0,y0,x1,y1,cls){ return '<line class="'+cls+'" x1="'+(x0*S).toFixed(1)+'" y1="'+(y0*S).toFixed(1)+'" x2="'+(x1*S).toFixed(1)+'" y2="'+(y1*S).toFixed(1)+'"/>'; }
 function dimH(x0,x1,y,txt){
@@ -516,46 +517,103 @@ function drawPlan(){
   var nx = 0.40*S, ny = 6.55*S;
   o += '<g transform="translate('+nx+' '+ny+') rotate(12)"><circle r="26" fill="none" class="p-dimline"/><path d="M0 -34 L7 6 L0 0 L-7 6 Z" fill="var(--accent)"/><text class="p-dimtxt" y="-40">N</text></g>';
   o += '<g transform="translate('+(-0.1*S)+' '+(7.28*S)+')"><rect width="50" height="6" fill="var(--ink)"/><rect x="50" width="50" height="6" fill="none" class="p-dimline"/><text class="p-small" x="0" y="22">0</text><text class="p-small" x="92" y="22">1 m</text></g>';
-  measures.forEach(function(m){ o += measSvg(m.a, m.b); });
-  if (pending){
-    o += '<circle class="p-measdot" cx="'+pending[0]*S+'" cy="'+pending[1]*S+'" r="5"/>';
-    if (hover) o += measSvg(pending, hover);
+  if (iso >= 0 && G.rooms[iso]){
+    var ip = G.rooms[iso].pts.map(function(q){ return (q[0]*S).toFixed(1)+' '+(q[1]*S).toFixed(1); }).join('L');
+    o += '<path class="p-iso" d="M-3000 -3000H4000V4000H-3000ZM'+ip+'Z"/><path class="p-isoline" d="M'+ip+'Z"/>';
   }
   svg.innerHTML = o;
 }
-function measSvg(a,b){
-  var d = Math.hypot(b[0]-a[0], b[1]-a[1]);
-  var mx = (a[0]+b[0])/2*S, my = (a[1]+b[1])/2*S;
-  return L(a[0],a[1],b[0],b[1],'p-meas') +
-    '<circle class="p-measdot" cx="'+a[0]*S+'" cy="'+a[1]*S+'" r="4"/><circle class="p-measdot" cx="'+b[0]*S+'" cy="'+b[1]*S+'" r="4"/>' +
-    '<text class="p-meastxt" x="'+mx+'" y="'+(my-9)+'">'+f2(d)+' m</text>';
+var VB0 = [-70,-62,815,930], VB = VB0.slice(), vbAnim = 0;
+function setVB(v){ VB = v; svg.setAttribute('viewBox', v.map(function(n){ return n.toFixed(1); }).join(' ')); }
+function flyVB(to){
+  cancelAnimationFrame(vbAnim);
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches){ setVB(to); return; }
+  var from = VB.slice(), t0 = performance.now();
+  (function step(now){
+    var t = Math.min(1, (now-t0)/320), e = 1 - Math.pow(1-t, 3);
+    setVB(from.map(function(a,i){ return a + (to[i]-a)*e; }));
+    if (t < 1) vbAnim = requestAnimationFrame(step);
+  })(t0);
 }
-function buildSnap(){
-  SNAP = [];
-  G.solids.forEach(function(s){ if (s.tag==='full') SNAP.push([s.x0,s.y0],[s.x1,s.y0],[s.x0,s.y1],[s.x1,s.y1]); });
+function svgPoint(cx, cy){ var pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+function zoomAt(cx, cy, k){
+  var w = Math.max(VB0[2]/9, Math.min(VB0[2]*1.25, VB[2]*k)); k = w/VB[2];
+  var p = svgPoint(cx, cy);
+  setVB([p.x-(p.x-VB[0])*k, p.y-(p.y-VB[1])*k, w, VB[3]*k]);
 }
-function planPoint(ev){
-  var pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
-  var p = pt.matrixTransform(svg.getScreenCTM().inverse());
-  var x = p.x/S, y = p.y/S, best = null, bd = .12;
-  SNAP.forEach(function(c){ var d = Math.hypot(c[0]-x,c[1]-y); if (d < bd){ bd = d; best = c; } });
-  if (best) return [best[0], best[1]];
-  return [Math.round(x*20)/20, Math.round(y*20)/20];
+function clampVB(){   // não deixa a planta sumir da tela
+  var cx = VB[0]+VB[2]/2, cy = VB[1]+VB[3]/2;
+  cx = Math.max(VB0[0], Math.min(VB0[0]+VB0[2], cx)); cy = Math.max(VB0[1], Math.min(VB0[1]+VB0[3], cy));
+  setVB([cx-VB[2]/2, cy-VB[3]/2, VB[2], VB[3]]);
 }
-svg.addEventListener('pointerdown', function(ev){
-  var p = planPoint(ev);
-  if (!pending){ pending = p; hover = null; $('plan-tip').textContent = 'Agora toque no segundo ponto'; }
-  else {
-    if (Math.hypot(p[0]-pending[0], p[1]-pending[1]) > .01) measures.push({a:pending,b:p});
-    pending = null; hover = null; $('plan-tip').textContent = 'Toque em dois pontos para medir';
+function roomAt(x, y){
+  var hit = -1;
+  G.rooms.forEach(function(r, i){
+    var ps = r.pts, c = false;
+    for (var a = 0, b = ps.length-1; a < ps.length; b = a++)
+      if ((ps[a][1] > y) !== (ps[b][1] > y) && x < (ps[b][0]-ps[a][0])*(y-ps[a][1])/(ps[b][1]-ps[a][1]) + ps[a][0]) c = !c;
+    if (c) hit = i;
+  });
+  return hit;
+}
+var TIP0 = 'Arraste e dê zoom · toque num ambiente para isolar';
+function isolate(i){
+  iso = (i === iso) ? -1 : i;
+  var r = G.rooms[iso];
+  if (r){
+    var xs = r.pts.map(function(q){ return q[0]; }), ys = r.pts.map(function(q){ return q[1]; }), m = .55;
+    var x0 = Math.min.apply(null, xs)-m, x1 = Math.max.apply(null, xs)+m, y0 = Math.min.apply(null, ys)-m, y1 = Math.max.apply(null, ys)+m;
+    flyVB([x0*S, y0*S, (x1-x0)*S, (y1-y0)*S]);
+    $('plan-tip').textContent = (r.table || r.name.join(' ')) + ' · toque de novo para ver tudo';
+  } else { iso = -1; flyVB(VB0.slice()); $('plan-tip').textContent = TIP0; }
+  drawTable(); drawPlan();
+}
+(function(){
+  var ptr = {}, moved = 0, pinch = 0, t0 = 0;
+  function ids(){ return Object.keys(ptr); }
+  svg.addEventListener('pointerdown', function(ev){
+    cancelAnimationFrame(vbAnim);
+    ptr[ev.pointerId] = {x:ev.clientX, y:ev.clientY};
+    try { svg.setPointerCapture(ev.pointerId); } catch(_){}
+    if (ids().length === 1){ moved = 0; t0 = performance.now(); }
+    pinch = 0; svg.classList.add('drag');
+  });
+  svg.addEventListener('pointermove', function(ev){
+    var p = ptr[ev.pointerId]; if (!p) return;
+    var dx = ev.clientX-p.x, dy = ev.clientY-p.y, n = ids();
+    if (n.length === 1){
+      moved += Math.abs(dx)+Math.abs(dy);
+      if (moved > 6){ var s = svg.getScreenCTM().a; setVB([VB[0]-dx/s, VB[1]-dy/s, VB[2], VB[3]]); }
+      p.x = ev.clientX; p.y = ev.clientY;
+    } else if (n.length === 2){
+      p.x = ev.clientX; p.y = ev.clientY; moved = 99;
+      var a = ptr[n[0]], b = ptr[n[1]], d = Math.hypot(a.x-b.x, a.y-b.y), mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+      if (pinch){
+        zoomAt(mx, my, pinch.d/Math.max(d, 1));
+        var s2 = svg.getScreenCTM().a; setVB([VB[0]-(mx-pinch.mx)/s2, VB[1]-(my-pinch.my)/s2, VB[2], VB[3]]);
+      }
+      pinch = {d:d, mx:mx, my:my};
+    }
+  });
+  function up(ev){
+    if (!ptr[ev.pointerId]) return;
+    var tap = ids().length === 1 && moved <= 6 && performance.now()-t0 < 600 && ev.type === 'pointerup';
+    delete ptr[ev.pointerId]; pinch = 0;
+    if (!ids().length){ svg.classList.remove('drag'); clampVB(); }
+    if (tap){ var q = svgPoint(ev.clientX, ev.clientY), i = roomAt(q.x/S, q.y/S); if (iso >= 0) isolate(iso); else if (i >= 0) isolate(i); }
   }
-  drawPlan();
+  svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
+  svg.addEventListener('wheel', function(ev){
+    ev.preventDefault(); cancelAnimationFrame(vbAnim);
+    zoomAt(ev.clientX, ev.clientY, Math.exp((ev.deltaMode ? ev.deltaY*30 : ev.deltaY)*.0016)); clampVB();
+  }, {passive:false});
+})();
+function resetPlan(){ if (iso >= 0) isolate(iso); else flyVB(VB0.slice()); }
+$('btn-clear').addEventListener('click', resetPlan);
+$('rooms-body').addEventListener('click', function(ev){
+  var tr = ev.target.closest ? ev.target.closest('tr[data-room]') : null;
+  if (tr && !$('view-planta').hidden) isolate(+tr.getAttribute('data-room'));
 });
-svg.addEventListener('pointermove', function(ev){
-  if (!pending || ev.pointerType === 'touch') return;
-  hover = planPoint(ev); drawPlan();
-});
-$('btn-clear').addEventListener('click', function(){ measures = []; pending = null; hover = null; $('plan-tip').textContent = 'Toque em dois pontos para medir'; drawPlan(); });
 $('btn-furn2d').addEventListener('click', function(){ showFurn2d = !showFurn2d; this.setAttribute('aria-pressed', showFurn2d); drawPlan(); });
 
 /* ---------- abas e layout ---------- */
@@ -573,8 +631,9 @@ $('tab-planta').addEventListener('click', function(){ go('planta'); });
 $('tab-maquete').addEventListener('click', function(){ go('maquete'); });
 window.addEventListener('hashchange', function(){ show(location.hash === '#maquete' ? 'maquete' : 'planta'); });
 function setLayout(id){
-  G = geometry(id); measures = []; pending = null; hover = null; dimOn = {};
-  buildSnap(); drawTable(); drawPlan();
+  G = geometry(id); iso = -1; dimOn = {};
+  cancelAnimationFrame(vbAnim); setVB(VB0.slice()); $('plan-tip').textContent = TIP0;
+  drawTable(); drawPlan();
   if (three) three.rebuild();
 }
 $('layout').addEventListener('change', function(){ setLayout(this.value); });
@@ -1721,7 +1780,7 @@ function init3d(){
   };
 }
 window.__apto = { get three(){ return three; }, setLayout:setLayout };
-buildSnap(); drawTable(); drawPlan();
+drawTable(); drawPlan();
 show(location.hash === '#maquete' ? 'maquete' : 'planta');
 })();
 </script>
