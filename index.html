@@ -304,7 +304,7 @@ function geometry(id){
       {k:'pendant',type:'bar',cx:6.22,cy:3.63,len:.90,z:1.52,dir:'y'},
       {k:'desk',x0:3.95,y0:2.60,x1:4.23,y1:3.90},
       {k:'gourmet',x0:4.55,y0:6.25,x1:4.87,y1:7.45},
-      {k:'bench',x0:6.41,y0:6.65,x1:6.86,y1:7.47,back:'x1',bh:.66,pillows:true,nm:'Banco da varanda (assento a 0,47)'},
+      {k:'bench',x0:6.41,y0:6.65,x1:6.86,y1:7.47,back:'x1',bh:.66,pillows:true,pet:true,nm:'Banco da varanda (assento a 0,47, caminha embaixo)'},
       {k:'pendant',type:'globe',cx:6.22,cy:7.03,z:1.70},
       {k:'pendant',type:'sconce',cx:6.86,cy:6.74,z:1.42},
       {k:'round',cx:5.98,cy:7.06,r:.28,h:.72},
@@ -1366,6 +1366,15 @@ function init3d(){
       else if (f.k==='bench'){                     // banco estofado com gomos no encosto; mat:'boucle' = claro, senão na cor do sofá
         var bh = f.bh || .92, um = f.mat === 'boucle' ? M.boucle : M.sofa, alongX = f.back === 'y0' || f.back === 'y1';
         var bl = alongX ? f.x1-f.x0 : f.y1-f.y0, bn = Math.max(2, Math.round(bl/.14)), bw = bl/bn;
+        if (f.pet && f.back === 'x1'){                 // banco aberto embaixo, virado para a varanda, com a caminha da cachorra dentro
+          box(gMov, f.x0,f.y0,f.x1,f.y1, .36,.40, M.wood);
+          box(gMov, f.x0,f.y0,f.x1,f.y0+.03, 0,.36, M.wood); box(gMov, f.x0,f.y1-.03,f.x1,f.y1, 0,.36, M.wood);
+          box(gMov, f.x1-.02,f.y0+.03,f.x1,f.y1-.03, 0,.36, M.wood, {cast:false});
+          var p0 = f.x0+.02, p1 = f.x1-.04, q0 = f.y0+.07, q1 = f.y1-.07;
+          box(gMov, p0+.05,q0+.05,p1-.05,q1-.05, 0,.07, M.boucle, {cast:false});
+          box(gMov, p0,q0,p1,q0+.05, 0,.13, M.cushion, {cast:false}); box(gMov, p0,q1-.05,p1,q1, 0,.13, M.cushion, {cast:false});
+          box(gMov, p1-.05,q0+.05,p1,q1-.05, 0,.13, M.cushion, {cast:false}); box(gMov, p0,q0+.05,p0+.05,q1-.05, 0,.07, M.cushion, {cast:false});
+        } else
         box(gMov, f.x0,f.y0,f.x1,f.y1, 0,.40, f.mat === 'boucle' ? M.stone : M.wood);
         box(gMov, f.x0+.004,f.y0+.004,f.x1-.004,f.y1-.004, .40,.47, um);
         for (i=0;i<bn;i++){
@@ -1647,8 +1656,9 @@ function init3d(){
       camera.lookAt(walk.x + Math.sin(walk.yaw)*cp, 1.6 + Math.sin(walk.pitch), walk.z + Math.cos(walk.yaw)*cp);
     } else {
       camera.fov = 42; var sp = Math.sin(orb.phi);
-      camera.position.set(orb.tx + orb.r*sp*Math.sin(orb.theta), orb.ty + orb.r*Math.cos(orb.phi), orb.tz + orb.r*sp*Math.cos(orb.theta));
-      camera.lookAt(orb.tx, orb.ty, orb.tz);
+      var oty = orb.ty + (1.5-orb.ty) * Math.max(0, Math.min(1, (10-orb.r)/5));   // de perto o ponto de mira sobe para a altura dos olhos (1,50 m): entrar no ambiente não deixa a câmera no chão
+      camera.position.set(orb.tx + orb.r*sp*Math.sin(orb.theta), oty + orb.r*Math.cos(orb.phi), orb.tz + orb.r*sp*Math.cos(orb.theta));
+      camera.lookAt(orb.tx, oty, orb.tz);
     }
     camera.updateProjectionMatrix();
     applyClip();
@@ -1776,7 +1786,7 @@ function init3d(){
     var ids = Object.keys(ptrs);
     if (ids.length >= 2 && mode !== 'walk'){
       var a = ptrs[ids[0]], b = ptrs[ids[1]], d = Math.hypot(a.x-b.x, a.y-b.y), mid = [(a.x+b.x)/2, (a.y+b.y)/2];
-      if (lastPinch) orb.r = Math.max(3, Math.min(30, orb.r * lastPinch / d));
+      if (lastPinch) orb.r = Math.max(1.6, Math.min(30, orb.r * lastPinch / d));
       if (lastMid) pan(mid[0]-lastMid[0], mid[1]-lastMid[1]);
       lastPinch = d; lastMid = mid; return;
     }
@@ -1787,7 +1797,7 @@ function init3d(){
   canvas.addEventListener('wheel', function(e){
     e.preventDefault();
     if (mode === 'walk'){ var st = -e.deltaY*.002; var q = collide(walk.x + Math.sin(walk.yaw)*st, walk.z + Math.cos(walk.yaw)*st); walk.x = q[0]; walk.z = q[1]; }
-    else orb.r = Math.max(3, Math.min(30, orb.r * Math.exp(e.deltaY*.0012)));
+    else orb.r = Math.max(1.6, Math.min(30, orb.r * Math.exp(e.deltaY*.0012)));
   }, {passive:false});
   var KEYMAP = {KeyW:'fwd',ArrowUp:'fwd',KeyS:'back',ArrowDown:'back',KeyA:'sl',KeyD:'sr',ArrowLeft:'tl',ArrowRight:'tr'};
   window.addEventListener('keydown', function(e){
