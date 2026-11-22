@@ -305,6 +305,7 @@ function geometry(id){
       {k:'pendant',type:'bar',cx:6.12,cy:3.65,len:.90,z:1.52,dir:'y'},
       {k:'panels',xw:6.95,ya:sy+.17,yb:sy+1.07},
       {k:'desk',x0:3.95,y0:2.60,x1:4.23,y1:3.90},
+      {k:'chair2',cx:4.36,cy:3.25,r:.22,ang:Math.PI},   // cadeira igual à da mesa de jantar, encaixada sob a mesa do computador
       {k:'gourmet',x0:4.55,y0:6.25,x1:4.87,y1:7.45},
       {k:'bench',x0:6.41,y0:6.65,x1:6.86,y1:7.47,back:'x1',bh:.66,pillows:true,pet:true,nm:'Banco da varanda (assento a 0,47, caminha embaixo)'},
       {k:'pendant',type:'globe',cx:6.62,cy:7.03,z:1.70},
@@ -351,6 +352,8 @@ function geometry(id){
     if (rp) gap(6.5,1.75, 6.5,rp.y0);                                   // hall: porta de entrada ↔ ripado
     if (rp && dk) gap(dk.x1,2.82, rp.x0,2.82);                          // entrada da sala: estante ↔ banco do ripado
     if (dk && ov) gap(dk.x1,ov.cy, ov.cx-ov.rx,ov.cy);                  // estante ↔ mesa de jantar
+    var hc = mov.filter(function(f){ return f.k === 'chair2' && f.cx < 5; })[0];
+    if (hc && ov){ var hdy = (hc.cy-ov.cy)/ov.ry, hxe = ov.cx - ov.rx*Math.sqrt(Math.max(0, 1-hdy*hdy)); gap(hc.cx+.23,hc.cy, hxe,hc.cy); }   // encosto da cadeira do computador ↔ mesa de jantar
     if (ov && sf && sf.y0 > ov.cy) gap(ov.cx,ov.cy+ov.ry, ov.cx,sf.y0); // mesa ↔ sofá
     var tp = mov.filter(function(f){ return f.k === 'ott'; })[0];
     if (tp && sf && sf.x0 > tp.x1){ var ym = Math.min(Math.max((tp.y0+tp.y1)/2, sf.y0+.25), sf.y1-.25); gap(tp.x1,ym, sf.x0,ym); }   // pufes da TV ↔ sofá
