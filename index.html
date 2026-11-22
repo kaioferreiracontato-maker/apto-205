@@ -299,11 +299,10 @@ function geometry(id){
       {k:'ripado',x0:5.85,y0:2.60,x1:6.95,y1:2.66,nm:'Ripado da entrada'},
       {k:'bench',x0:5.85,y0:2.66,x1:6.50,y1:3.11,back:'y0',mat:'boucle',nm:'Banco do ripado (assento a 0,47)'},
       {k:'bench',x0:6.50,y0:2.66,x1:6.95,y1:4.15,back:'x1',back2:'y0',mat:'boucle',nm:'Banco da parede (assento a 0,47)'},
-      {k:'oval',cx:6.10,cy:3.52,rx:.40,ry:.40,h:.75,tulip:true,nm:'Mesa redonda tulipa'},
-      {k:'chair2',cx:5.48,cy:3.52,r:.22,ang:0},
-      {k:'chair2',cx:5.84,cy:4.08,r:.22,ang:-1.134},
+      {k:'oval',cx:6.12,cy:3.71,rx:.40,ry:.70,h:.75,tulip:true,nm:'Mesa oval tulipa'},
+      {k:'chair2',cx:5.72,cy:4.42,r:.22,ang:-.684},
       {k:'green',xw:6.95,y0:2.66,y1:4.30},
-      {k:'pendant',type:'bar',cx:6.10,cy:3.52,len:.70,z:1.52,dir:'y'},
+      {k:'pendant',type:'bar',cx:6.12,cy:3.71,len:.90,z:1.52,dir:'y'},
       {k:'panels',xw:6.95,ya:sy+.17,yb:sy+1.07},
       {k:'desk',x0:3.95,y0:2.60,x1:4.23,y1:3.90},
       {k:'gourmet',x0:4.55,y0:6.25,x1:4.87,y1:7.45},
@@ -1629,10 +1628,12 @@ function init3d(){
       }
       else if (f.k==='oval'){                      // mesa oval de pedra clara com pé central
         blob(gMov, f.cx-f.rx,f.cy-f.ry,f.cx+f.rx,f.cy+f.ry, .1);
-        if (f.tulip){                                // mesa redonda branca de pé tulipa
-          cyl(gMov, f.cx,f.cy, f.rx, f.h-.03,f.h, M.white, {r2:f.rx-.025, seg:48});
-          cyl(gMov, f.cx,f.cy, .04, f.h-.14,f.h-.03, M.white, {r2:.15, seg:28, cast:false}); cyl(gMov, f.cx,f.cy, .04, .26,f.h-.14, M.white, {seg:20});
-          cyl(gMov, f.cx,f.cy, .04, .03,.26, M.white, {r2:.21, seg:32}); cyl(gMov, f.cx,f.cy, .21, 0,.03, M.white, {r2:.24, seg:32, cast:false});
+        if (f.tulip){                                // mesa branca de pé tulipa, redonda ou oval
+          var tk = f.ry > f.rx ? {sz:f.ry/f.rx} : {sx:f.rx/f.ry}, tr = Math.min(f.rx, f.ry), tm = (f.ry > f.rx ? 1 : 0);
+          var TO = function(o){ for (var kk in tk) o[kk] = tk[kk]; return o; }, TS = function(o){ for (var kk in tk) o[kk] = 1 + (tk[kk]-1)*.6; return o; };
+          cyl(gMov, f.cx,f.cy, tr, f.h-.03,f.h, M.white, TO({r2:tr-.025, seg:48}));
+          cyl(gMov, f.cx,f.cy, .04, f.h-.14,f.h-.03, M.white, TS({r2:.15, seg:28, cast:false})); cyl(gMov, f.cx,f.cy, .04, .26,f.h-.14, M.white, TS({seg:20}));
+          cyl(gMov, f.cx,f.cy, .04, .03,.26, M.white, TS({r2:.21, seg:32})); cyl(gMov, f.cx,f.cy, .21, 0,.03, M.white, TS({r2:.24, seg:32, cast:false}));
           cyl(gMov, f.cx,f.cy, .13, f.h,f.h+.012, M.honey, {seg:28, cast:false});                    // bandeja com taças
           [[.05,.03],[-.05,.04],[0,-.06]].forEach(function(q){ cyl(gMov, f.cx+q[0],f.cy+q[1], .022, f.h+.012,f.h+.10, M.glassC, {r2:.012, seg:10, cast:false}); });
           return;
