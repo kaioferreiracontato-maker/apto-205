@@ -287,7 +287,7 @@ function geometry(id){
     var sy = id === 'orig' ? 4.50 : 4.55;            // sofá-cama Marad: 2,10 × 0,88 m
     mov.push({k:'bed',x0:1.35,y0:5.10,x1:3.24,y1:5.90}, {k:'wardrobe',x0:3.86,y0:5.93,x1:4.40,y1:7.50,front:'x0'},
       {k:'rack',x0:4.55,y0:4.95,x1:4.83,y1:(id === 'origC' ? 6.27 : 6.20),tvc:sy+1.05},
-      {k:'pouf',cx:4.79,cy:sy+.76,r:.19,tvp:true}, {k:'pouf',cx:4.79,cy:sy+1.33,r:.19,tvp:true},
+      {k:'ott',x0:4.58,y0:sy+.51,x1:4.98,y1:sy+1.01}, {k:'ott',x0:4.58,y0:sy+1.08,x1:4.98,y1:sy+1.58},
       {k:'rug',x0:4.98,y0:sy+.18,x1:6.22,y1:sy+1.92},
       {k:'sofa',x0:5.98,y0:sy,x1:6.86,y1:sy+2.10});
     if (id === 'orig') mov.push(
@@ -327,7 +327,7 @@ function geometry(id){
     ghost = [{x0:3.95,y0:4.95,x1:4.55,y1:5.10},{x0:4.40,y0:5.10,x1:4.55,y1:5.95}];
     mov.push({k:'wardrobe',x0:3.86,y0:6.12,x1:4.40,y1:7.50,front:'x0'},
       {k:'rack',x0:3.95,y0:2.58,x1:4.23,y1:4.08,tvc:3.50},
-      {k:'pouf',cx:4.19,cy:3.21,r:.19,tvp:true}, {k:'pouf',cx:4.19,cy:3.78,r:.19,tvp:true},
+      {k:'ott',x0:3.98,y0:2.96,x1:4.38,y1:3.46}, {k:'ott',x0:3.98,y0:3.53,x1:4.38,y1:4.03},
       {k:'sofa',x0:6.05,y0:2.62,x1:6.93,y1:4.72},
       {k:'bench',x0:3.95,y0:4.97,x1:4.40,y1:5.95},
       {k:'table',x0:4.46,y0:5.00,x1:5.16,y1:5.92},
@@ -350,8 +350,8 @@ function geometry(id){
     if (rp && dk) gap(dk.x1,2.82, rp.x0,2.82);                          // entrada da sala: estante ↔ banco do ripado
     if (dk && ov) gap(dk.x1,ov.cy, ov.cx-ov.rx,ov.cy);                  // estante ↔ mesa de jantar
     if (ov && sf && sf.y0 > ov.cy) gap(ov.cx,ov.cy+ov.ry, ov.cx,sf.y0); // mesa ↔ sofá
-    var tp = mov.filter(function(f){ return f.k === 'pouf' && f.tvp; })[0];
-    if (tp && sf && sf.x0 > tp.cx){ var ym = Math.min(Math.max(tp.cy, sf.y0+.25), sf.y1-.25); gap(tp.cx+tp.r,ym, sf.x0,ym); }   // pufes da TV ↔ sofá
+    var tp = mov.filter(function(f){ return f.k === 'ott'; })[0];
+    if (tp && sf && sf.x0 > tp.x1){ var ym = Math.min(Math.max((tp.y0+tp.y1)/2, sf.y0+.25), sf.y1-.25); gap(tp.x1,ym, sf.x0,ym); }   // pufes da TV ↔ sofá
     gap(3.47,4.10, 3.47,4.95);                                          // corredor dos quartos
     gap(3.95,3.30, 6.95,3.30, true);                                    // largura da sala no jantar (parede a parede)
     if (!recuo) gap(4.55,5.80, 6.95,5.80, true);                        // largura da sala na TV (parede a parede)
@@ -416,7 +416,7 @@ var G = geometry('origC');
 
 /* ---------- medidas dos móveis: [nome, altura, altura do rótulo no 3D] ---------- */
 var KIND = {sofa:['Sofá-cama (assento a 0,46)',.66], bench:['Banco (assento a 0,47)',null], oval:['Mesa oval',null], table:['Mesa',.76], chair:['Cadeira (assento a 0,50)',.85],
-  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
+  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], ott:['Pufe de gomos (apoio de pés)',.46], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
   rack:['Aparador suspenso da TV',.62,1.0], ripado:['Ripado',2.5,2.2], round:['Mesa redonda',null], fridge:['Geladeira',1.86,2.05], washer:['Lava-roupas',.89],
   bed:['Cama',.50], wardrobe:['Guarda-roupa',2.40,2.2], rug:['Tapete',0], hang:['Prateleiras suspensas',0,2.25], kitchen:['Bancada da cozinha (pedra)',.90,1.15], dish:['Lava-louças Midea 8 serviços',.595,.62]};
 var dimAll = false, dimOn = {};
@@ -1372,10 +1372,15 @@ function init3d(){
           box(gMov, f.x0,f.y0,f.x1,f.y1, .36,.40, M.wood);
           box(gMov, f.x0,f.y0,f.x1,f.y0+.03, 0,.36, M.wood); box(gMov, f.x0,f.y1-.03,f.x1,f.y1, 0,.36, M.wood);
           box(gMov, f.x1-.02,f.y0+.03,f.x1,f.y1-.03, 0,.36, M.wood, {cast:false});
-          var p0 = f.x0+.02, p1 = f.x1-.04, q0 = f.y0+.07, q1 = f.y1-.07;
-          box(gMov, p0+.05,q0+.05,p1-.05,q1-.05, 0,.07, M.boucle, {cast:false});
-          box(gMov, p0,q0,p1,q0+.05, 0,.13, M.cushion, {cast:false}); box(gMov, p0,q1-.05,p1,q1, 0,.13, M.cushion, {cast:false});
-          box(gMov, p1-.05,q0+.05,p1,q1-.05, 0,.13, M.cushion, {cast:false}); box(gMov, p0,q0+.05,p0+.05,q1-.05, 0,.07, M.cushion, {cast:false});
+          var p0 = f.x0+.02, p1 = f.x1-.04, q0 = f.y0+.07, q1 = f.y1-.07, br = .065, bz = .095;   // caminha fofinha: bordas roliças em bouclê e almofada terracota
+          box(gMov, p0+.02,q0+.03,p1-.02,q1-.03, 0,.05, M.boucle, {cast:false});
+          rod(gMov, p1-br,q0+br,bz, p1-br,q1-br,bz, br, M.boucle, {seg:16, cast:false});
+          rod(gMov, p0+.05,q0+br,bz, p1-br,q0+br,bz, br, M.boucle, {seg:16, cast:false}); rod(gMov, p0+.05,q1-br,bz, p1-br,q1-br,bz, br, M.boucle, {seg:16, cast:false});
+          rod(gMov, p0+.045,q0+br,.05, p0+.045,q1-br,.05, .045, M.boucle, {seg:14, cast:false});
+          [[p1-br,q0+br,br,bz],[p1-br,q1-br,br,bz],[p0+.05,q0+br,br,bz],[p0+.05,q1-br,br,bz]].forEach(function(q){
+            var sp = new T.Mesh(new T.SphereGeometry(q[2], 14, 10), M.boucle); sp.position.set(q[0], q[3], q[1]); sp.receiveShadow = true; gMov.add(sp);
+          });
+          var pc = new T.Mesh(new T.SphereGeometry(1, 22, 12), M.terra); pc.scale.set((p1-p0)/2-.085, .075, (q1-q0)/2-.10); pc.position.set((p0+p1)/2-.01, .085, (q0+q1)/2); pc.receiveShadow = true; gMov.add(pc);
         } else
         box(gMov, f.x0,f.y0,f.x1,f.y1, 0,.40, f.mat === 'boucle' ? M.stone : M.wood);
         box(gMov, f.x0+.004,f.y0+.004,f.x1-.004,f.y1-.004, .40,.47, um);
@@ -1515,6 +1520,21 @@ function init3d(){
         gMov.add(mr);
         PC(.14,pd-.10, .025, .75,.86, M.terra, {seg:12, cast:false}); PC(.21,pd-.08, .02, .75,.82, M.vase, {seg:12, cast:false});
         PB(.28,pd-.16,.44,pd-.05, .75,.765, M.stone, {cast:false});
+      }
+      else if (f.k==='ott'){                       // pufe retangular de três gomos, no veludo e na altura do assento do sofá (0,46): apoio de pés
+        box(gMov, f.x0+.03,f.y0+.03,f.x1-.03,f.y1-.03, 0,.02, M.dark, {cast:false});
+        var on = 3, ow = (f.y1-f.y0)/on, orr = .04;
+        for (i=0;i<on;i++){
+          var a0 = f.x0, a1 = f.x1, b0 = f.y0+i*ow+.003, b1 = f.y0+(i+1)*ow-.003, c0 = .02, c1 = .46;
+          box(gMov, a0+orr,b0+orr,a1-orr,b1-orr, c0,c1, M.sofa, {cast:false});
+          box(gMov, a0,b0+orr,a1,b1-orr, c0,c1-orr, M.sofa); box(gMov, a0+orr,b0,a1-orr,b1, c0,c1-orr, M.sofa, {cast:false});
+          [[a0+orr,b0+orr],[a0+orr,b1-orr],[a1-orr,b0+orr],[a1-orr,b1-orr]].forEach(function(q){
+            cyl(gMov, q[0],q[1], orr, c0,c1-orr, M.sofa, {seg:12, cast:false});
+            var sp = new T.Mesh(new T.SphereGeometry(orr, 12, 8), M.sofa); sp.position.set(q[0], c1-orr, q[1]); sp.receiveShadow = true; gMov.add(sp);
+          });
+          rod(gMov, a0+orr,b0+orr,c1-orr, a1-orr,b0+orr,c1-orr, orr, M.sofa, {seg:12, cast:false}); rod(gMov, a0+orr,b1-orr,c1-orr, a1-orr,b1-orr,c1-orr, orr, M.sofa, {seg:12, cast:false});
+          rod(gMov, a0+orr,b0+orr,c1-orr, a0+orr,b1-orr,c1-orr, orr, M.sofa, {seg:12, cast:false}); rod(gMov, a1-orr,b0+orr,c1-orr, a1-orr,b1-orr,c1-orr, orr, M.sofa, {seg:12, cast:false});
+        }
       }
       else if (f.k==='pouf'){
         blob(gMov, f.cx-f.r,f.cy-f.r,f.cx+f.r,f.cy+f.r, .06);
