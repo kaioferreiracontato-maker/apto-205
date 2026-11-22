@@ -39,7 +39,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;flex:1;min-
 .stage > div{position:absolute;inset:0}
 #plan{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 #plan.drag{cursor:grabbing}
-.p-high{stroke-dasharray:5 4;fill:none}
 .p-iso{fill:var(--paper);fill-opacity:.8;fill-rule:evenodd;pointer-events:none}
 .p-isoline{fill:none;stroke:var(--accent);stroke-width:2.4;pointer-events:none}
 #rooms-body tr[data-room]{cursor:pointer}
@@ -286,7 +285,7 @@ function geometry(id){
     quarto = {name:['Quarto'],area:7.32,dims:[3.05,2.40],lab:[2.70,6.22], pts:[[1.35,5.10],[4.40,5.10],[4.40,7.50],[1.35,7.50]]};
     var sy = id === 'orig' ? 4.50 : 4.55;            // sofá-cama Marad: 2,10 × 0,88 m
     mov.push({k:'bed',x0:1.35,y0:5.10,x1:3.24,y1:5.90}, {k:'wardrobe',x0:3.86,y0:5.93,x1:4.40,y1:7.50,front:'x0'},
-      {k:'rack',x0:4.55,y0:4.95,x1:4.76,y1:(id === 'origC' ? 6.27 : 6.20),tvc:sy+1.05},
+      {k:'rack',x0:4.55,y0:4.95,x1:4.83,y1:(id === 'origC' ? 6.27 : 6.20),tvc:sy+1.05},
       {k:'pouf',cx:4.79,cy:sy+.76,r:.19,tvp:true}, {k:'pouf',cx:4.79,cy:sy+1.33,r:.19,tvp:true},
       {k:'rug',x0:4.98,y0:sy+.18,x1:6.22,y1:sy+1.92},
       {k:'sofa',x0:5.98,y0:sy,x1:6.86,y1:sy+2.10});
@@ -301,7 +300,7 @@ function geometry(id){
       {k:'oval',cx:6.22,cy:3.63,rx:.38,ry:.60,h:.75},
       {k:'chair',x0:6.47,y0:3.97,x1:6.93,y1:4.43,back:'x1'},
       {k:'hang',x0:6.73,y0:2.75,x1:6.95,y1:4.40,dir:-1,nm:'Prateleiras sobre a mesa',decor:true,
-       shelves:[[2.75,3.80,1.62],[3.40,4.40,2.00]], frames:[[2.95,1.59],[3.07,1.59],[4.05,1.97],[4.17,1.97]]},
+       shelves:[[2.75,3.80,1.62],[3.40,4.40,2.00]], frames:[[2.83,1.59],[3.72,1.59],[4.32,1.97]]},
       {k:'pendant',type:'bar',cx:6.22,cy:3.63,len:.90,z:1.52,dir:'y'},
       {k:'desk',x0:3.95,y0:2.60,x1:4.23,y1:3.90},
       {k:'gourmet',x0:4.55,y0:6.25,x1:4.87,y1:7.45},
@@ -326,7 +325,7 @@ function geometry(id){
       pts:[[1.35,5.10],[3.80,5.10],[3.80,6.10],[4.40,6.10],[4.40,7.50],[1.35,7.50]]};
     ghost = [{x0:3.95,y0:4.95,x1:4.55,y1:5.10},{x0:4.40,y0:5.10,x1:4.55,y1:5.95}];
     mov.push({k:'wardrobe',x0:3.86,y0:6.12,x1:4.40,y1:7.50,front:'x0'},
-      {k:'rack',x0:3.95,y0:2.58,x1:4.16,y1:4.08,tvc:3.50},
+      {k:'rack',x0:3.95,y0:2.58,x1:4.23,y1:4.08,tvc:3.50},
       {k:'pouf',cx:4.19,cy:3.21,r:.19,tvp:true}, {k:'pouf',cx:4.19,cy:3.78,r:.19,tvp:true},
       {k:'sofa',x0:6.05,y0:2.62,x1:6.93,y1:4.72},
       {k:'bench',x0:3.95,y0:4.97,x1:4.40,y1:5.95},
@@ -417,7 +416,7 @@ var G = geometry('origC');
 /* ---------- medidas dos móveis: [nome, altura, altura do rótulo no 3D] ---------- */
 var KIND = {sofa:['Sofá-cama (assento a 0,46)',.66], bench:['Banco (assento a 0,47)',null], oval:['Mesa oval',null], table:['Mesa',.76], chair:['Cadeira (assento a 0,50)',.85],
   stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Móvel do café',.90],
-  rack:['Prateleira da TV (a 1,94 m)',null,2.15], ripado:['Ripado',2.5,2.2], round:['Mesa redonda',null], fridge:['Geladeira',1.86,2.05], washer:['Lava-roupas',.89],
+  rack:['Aparador suspenso da TV',.62,1.0], ripado:['Ripado',2.5,2.2], round:['Mesa redonda',null], fridge:['Geladeira',1.86,2.05], washer:['Lava-roupas',.89],
   bed:['Cama',.50], wardrobe:['Guarda-roupa',2.40,2.2], rug:['Tapete',0], hang:['Prateleiras suspensas',0,2.25], kitchen:['Bancada da cozinha (pedra)',.90,1.15], dish:['Lava-louças Midea 8 serviços',.595,.62]};
 var dimAll = false, dimOn = {};
 function dimItems(){ return G.mov.concat(FIX).filter(function(f){ return KIND[f.k]; }); }
@@ -475,7 +474,6 @@ function drawPlan(){
     if (f.k === 'pendant' || f.k === 'rug' || f.k === 'hang') return;
     if (f.rx) o += '<ellipse class="p-mov" cx="'+f.cx*S+'" cy="'+f.cy*S+'" rx="'+f.rx*S+'" ry="'+f.ry*S+'"/>';
     else if (f.cx !== undefined) o += '<circle class="p-mov" cx="'+f.cx*S+'" cy="'+f.cy*S+'" r="'+f.r*S+'"/>';
-    else if (f.k === 'rack') o += R(f,'p-mov p-high');
     else o += R(f,'p-mov');
   });
   G.solids.forEach(function(s){ if (s.tag==='full') o += R(s, s.shaft ? 'p-shaft' : 'p-wall'); });
@@ -859,7 +857,7 @@ function init3d(){
     rug: std({color:0xffffff, map:TX.rug, roughness:1, env:.15}), brass: std({color:0x9b7740, roughness:.32, metalness:.8, env:1.1}),
     sage: std({color:0x8d977a, roughness:.6, env:.4}),
     gold: std({color:0xa3813c, roughness:.42, metalness:.78, env:1.1}),
-    iron: std({color:0x131313, roughness:.5, metalness:.55, env:.5}),
+    iron: std({color:0x2a2826, roughness:.45, metalness:.6, env:.6}),
     globe: new T.MeshBasicMaterial({color:0xfff3df}), tvglass: std({color:0x15181c, roughness:.05, env:1.2}),
     terra: std({color:0x93513a, roughness:.9, env:.2}),
     paintT: std({color:0x8c4b34, roughness:.95, env:.2}), paintG: std({color:0x585e41, roughness:.95, env:.2}),
@@ -1201,16 +1199,16 @@ function init3d(){
       for (var q=.06;q<len;q+=.10) leaf(g, xh+(rnd()-.3)*.03, yy+(rnd()-.5)*.04, z+.10-q, .03+rnd()*.018, (k+Math.round(q*10))%2 ? M.leaf : M.leaf2);
     }
   }
-  function hangUnit(xw, dir, dp, shelves, frames){   // prateleiras de madeira presas em quadros de ferro preto que descem do teto
-    var xa = dir > 0 ? xw : xw-dp, xb = dir > 0 ? xw+dp : xw, t = .014;
+  function hangUnit(xw, dir, dp, shelves, rods){   // prateleiras de madeira presas na parede e em hastes finas que descem do teto pela borda da frente
+    var xa = dir > 0 ? xw : xw-dp, xb = dir > 0 ? xw+dp : xw, rx = dir > 0 ? xb-.022 : xa+.022;
     shelves.forEach(function(q){
       box(gMov, xa,q[0],xb,q[1], q[2]-.03,q[2], M.wood);
       var lx = dir > 0 ? xa+.03 : xb-.044; box(gMov, lx,q[0]+.03,lx+.014,q[1]-.03, q[2]-.037,q[2]-.03, M.led, {cast:false});
     });
-    frames.forEach(function(q){
-      var y = q[0], zb = q[1];
-      box(gMov, xa+.004,y-t/2,xa+.004+t,y+t/2, zb,H, M.iron, {cast:false}); box(gMov, xb-.004-t,y-t/2,xb-.004,y+t/2, zb,H, M.iron);
-      box(gMov, xa+.004,y-t/2,xb-.004,y+t/2, zb-t,zb, M.iron, {cast:false}); box(gMov, xa+.004,y-t/2,xb-.004,y+t/2, H-t,H, M.iron, {cast:false});
+    rods.forEach(function(q){                       // q = [posição ao longo da parede, altura onde a haste termina]
+      cyl(gMov, rx,q[0], .005, q[1],H, M.iron, {seg:8});
+      cyl(gMov, rx,q[0], .011, H-.07,H, M.iron, {seg:10, cast:false});
+      cyl(gMov, rx,q[0], .010, q[1],q[1]+.03, M.iron, {seg:10, cast:false});
     });
   }
   function buildFurniture(){
@@ -1381,11 +1379,11 @@ function init3d(){
         box(gMov, f.cx-.22,f.cy-.22,f.cx+.22,f.cy+.22, .42,.50, M.fabric);
         box(gMov, f.cx+.18,f.cy-.21,f.cx+.23,f.cy+.21, .50,.98, M.fabric);
       }
-      else if (f.k==='desk'){                      // home office: mesa suspensa a 75 cm e prateleiras penduradas do teto em quadros de ferro preto
+      else if (f.k==='desk'){                      // home office: mesa suspensa a 75 cm e prateleiras penduradas do teto em hastes finas
         var d0 = f.x0, d1 = f.x1, px = (d0+d1)/2, e0 = f.y0, e1 = f.y1, dt = .75, s1 = 1.22, s2 = 1.60, s3 = 1.98, ec = (e0+e1)/2;
         box(gMov, d0,e0,d1,e1, dt-.04,dt, M.wood);
         hangUnit(d0, 1, d1-d0, [[e0+.04,e1-.04,s1],[e1-.84,e1-.04,s2],[e0+.04,e0+.84,s3]],
-          [[e0+.10,dt+.014],[e0+.20,dt+.014],[e1-.20,dt+.014],[e1-.10,dt+.014]]);
+          [[e0+.07,dt],[ec,s1-.03],[e1-.07,dt]]);
         // notebook aberto na mesa
         box(gMov, d0+.04,ec-.16,d0+.26,ec+.16, dt,dt+.014, M.steel, {cast:false});
         box(gMov, d0+.03,ec-.16,d0+.045,ec+.16, dt,dt+.21, M.dark, {cast:false});
@@ -1409,9 +1407,9 @@ function init3d(){
         w = (gy1-gy0)/3;
         for (i=0;i<3;i++) box(gMov, fx-.02,gy0+i*w+.003,fx,gy0+(i+1)*w-.003, .083,.857, M.wood, {cast:false});
         box(gMov, gx,gy0-.01,fx+.015,gy1+.01, .86,.90, M.white);                            // tampo branco
-        var s1 = 1.30, s2 = 1.62, s3 = 1.94;         // três prateleiras desencontradas, presas em quadros de ferro preto que descem do teto
+        var s1 = 1.30, s2 = 1.62, s3 = 1.94;         // três prateleiras desencontradas, presas em hastes finas que descem do teto
         hangUnit(gx, 1, .21, [[gy0+.02,gy1-.02,s1],[gy0+.02,gy0+.80,s2],[gy0+.02,gy1-.02,s3]],
-          [[gy0+.20,s1-.03],[gy0+.30,s1-.03],[gy1-.30,s1-.03],[gy1-.20,s1-.03]]);
+          [[gy0+.73,s1-.03],[gy1-.08,s1-.03]]);
         cy = gy1-.34;                                                                       // máquina de café e moedor
         box(gMov, gx+.04,cy-.13,gx+.28,cy+.13, .90,1.20, M.steel);
         box(gMov, gx+.24,cy-.07,gx+.30,cy+.07, 1.05,1.10, M.dark, {cast:false});
@@ -1491,19 +1489,26 @@ function init3d(){
           cyl(gMov, hx,q1[1]-.42, .04, q1[2],q1[2]+.07, M.white, {seg:14, cast:false}); cyl(gMov, hx,q1[1]-.52, .04, q1[2],q1[2]+.07, M.white, {seg:14, cast:false});
         }
       }
-      else if (f.k==='rack'){                      // parede da TV: faixa de ripado, TV na parede e uma prateleira comprida com LED presa em quadros de ferro preto
+      else if (f.k==='rack'){                      // parede da TV: faixa de ripado, TV, prateleira comprida no alto e aparador suspenso embaixo, ligados por hastes finas
         cy = f.tvc === undefined ? (f.y0+f.y1)/2 : f.tvc;
-        var rw = .42, rq = Math.round(rw/.05), sz = 1.94, sx = f.x0+.105;
+        var rw = .42, rq = Math.round(rw/.05), sz = 1.94, lz = .62, sx = f.x0+.105;
         box(gMov, f.x0,f.y0,f.x0+.008,f.y0+rw, 0,H, M.woodDark, {cast:false});
         for (i=0;i<rq;i++) box(gMov, f.x0+.008,f.y0+.012+i*.05,f.x0+.036,f.y0+.012+i*.05+.03, 0,H, M.wood, {cast:false});
         box(gMov, f.x0+.04,cy-.555,f.x0+.078,cy+.555, 1.0,1.63, M.screen);
         box(gMov, f.x0+.078,cy-.54,f.x0+.08,cy+.54, 1.015,1.615, M.tvglass, {cast:false});
-        hangUnit(f.x0, 1, f.x1-f.x0, [[f.y0,f.y1,sz]], [[f.y0+.12,sz-.03],[f.y0+.22,sz-.03],[f.y1-.32,sz-.03],[f.y1-.22,sz-.03]]);
+        hangUnit(f.x0, 1, .21, [[f.y0,f.y1,sz]], [[f.y0+.04,lz],[f.y1-.05,lz]]);
+        box(gMov, f.x0,f.y0,f.x1,f.y1, lz-.05,lz, M.wood);                                   // aparador: prateleira grossa suspensa, pufes embaixo
+        box(gMov, f.x0+.03,f.y0+.03,f.x0+.044,f.y1-.03, lz-.057,lz-.05, M.led, {cast:false});
         plant(gMov, sx, f.y0+.42, sz, .05, .20); plant(gMov, sx, f.y0+.57, sz, .05, .20);
         box(gMov, f.x0+.03,cy-.02,f.x0+.05,cy+.16, sz,sz+.23, M.dark, {cast:false}); box(gMov, f.x0+.05,cy,f.x0+.052,cy+.14, sz+.02,sz+.21, M.linen, {cast:false});
         box(gMov, sx-.07,cy+.24,sx+.07,cy+.46, sz,sz+.03, M.linen, {cast:false}); box(gMov, sx-.06,cy+.26,sx+.06,cy+.44, sz+.03,sz+.055, M.blanket, {cast:false});
-        cyl(gMov, sx, f.y1-.10, .045, sz,sz+.12, M.pot, {r2:.035, seg:14, cast:false});
-        glow(f.x0+.30, cy, 1.80, .14, 2.4);
+        cyl(gMov, sx, f.y1-.12, .045, sz,sz+.12, M.pot, {r2:.035, seg:14, cast:false});
+        var ax = f.x0+.14;                                                                  // objetos em cima do aparador
+        box(gMov, ax-.09,f.y0+.50,ax+.09,f.y0+.74, lz,lz+.03, M.linen, {cast:false}); box(gMov, ax-.08,f.y0+.52,ax+.08,f.y0+.72, lz+.03,lz+.055, M.terra, {cast:false});
+        cyl(gMov, ax, f.y0+.62, .035, lz+.055,lz+.12, M.vase, {r2:.05, seg:14, cast:false});
+        cyl(gMov, ax, cy+.10, .07, lz,lz+.16, M.vase, {r2:.04, seg:18}); cyl(gMov, ax, cy+.10, .03, lz+.16,lz+.22, M.vase, {r2:.045, seg:14, cast:false});
+        plant(gMov, ax, f.y1-.22, lz, .055, .22);
+        glow(f.x0+.30, cy, 1.80, .14, 2.4); glow(f.x0+.20, cy, .45, .10, 1.6);
       }
     });
   }
