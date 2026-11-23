@@ -39,7 +39,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;flex:1;min-
 .stage > div{position:absolute;inset:0}
 #plan{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 #plan.drag{cursor:grabbing}
-.p-route{fill:none;stroke:#17a394;stroke-opacity:.16;stroke-width:60;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.p-route{fill:none;stroke:#17a394;stroke-opacity:.18;stroke-width:40;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
 .p-routetxt{font:600 12px var(--font-body);fill:#17a394;text-anchor:middle}
 .p-seat{fill:var(--accent);stroke:var(--paper);stroke-width:2}
 .p-seattxt{font:700 12px var(--font-body);fill:#fff;text-anchor:middle;font-variant-numeric:tabular-nums;pointer-events:none}
@@ -327,12 +327,13 @@ function geometry(id){
       {k:'plant',cx:4.44,cy:1.78,r:.055,h:.22,z:1.05});
     if (id === 'origC' && showMeet){                     // reunião: cadeira do computador vira para a roda, entram mais três; caminho de 60 cm da porta ao corredor fica livre
       mov = mov.filter(function(f){ return !(f.k === 'chair2' && f.cx < 4.5); });
-      [[5.12,4.75],[5.15,4.15],[5.25,3.58],[5.55,3.05]].forEach(function(q){
-        mov.push({k:'chair2',cx:q[0],cy:q[1],r:.22,ang:Math.atan2(4.45-q[1], 5.45-q[0]),meet:true,nm:'Cadeira da roda (assento a 0,47)'});
+      mov.forEach(function(f){ if (f.k === 'ott'){ f.x0 += .31; f.x1 += .31; } });   // pufes puxados para fora do aparador, de frente para a roda
+      [[5.15,4.82],[4.90,4.18],[4.98,3.48],[5.50,2.98]].forEach(function(q){             // arco mais aberto, ~70 cm entre cadeiras
+        mov.push({k:'chair2',cx:q[0],cy:q[1],r:.22,ang:Math.atan2(4.30-q[1], 5.70-q[0]),meet:true,nm:'Cadeira da roda (assento a 0,47)'});
       });
-      seats = [[6.32,4.93],[6.32,5.60],[6.32,6.27], [6.17,2.90],[6.70,3.30],[6.70,3.88], [6.12,4.08], [4.75,5.31],[4.75,5.89],
-        [5.12,4.75],[5.15,4.15],[5.25,3.58],[5.55,3.05], [4.30,2.21], [6.62,6.86],[6.62,7.26],[5.60,6.98]];
-      route = [[6.45,2.18],[5.40,2.28],[4.62,2.55],[4.55,4.52],[3.80,4.52]];
+      seats = [[6.32,4.93],[6.32,5.60],[6.32,6.27], [6.17,2.90],[6.70,3.30],[6.70,3.88], [6.12,4.08], [5.06,5.31],[5.06,5.89],
+        [5.15,4.82],[4.90,4.18],[4.98,3.48],[5.50,2.98], [4.30,2.21], [6.62,6.86],[6.62,7.26],[5.60,6.98]];
+      route = [[6.45,2.18],[5.40,2.36],[4.50,2.60],[4.45,4.52],[3.80,4.52]];   // sobra ~40 cm entre a roda e a mesa do computador / vaso
     }
     if (id === 'origC' && showExtras && !showMeet) mov.push(          // cadeiras extras no lado vazio da mesa, a 60 cm uma da outra
       {k:'chair2',cx:5.54,cy:3.35,r:.22,ang:0,extra:true,nm:'Cadeira extra (assento a 0,47)'}, {k:'chair2',cx:5.54,cy:3.95,r:.22,ang:0,extra:true,nm:'Cadeira extra (assento a 0,47)'});
@@ -523,7 +524,7 @@ function drawPlan(){
   dimItems().forEach(function(f,i){ if (!dimOn[i]) return; var d = dimsOf(f); o += '<text class="p-note" x="'+d.x*S+'" y="'+(d.y*S+4)+'" style="paint-order:stroke;stroke:var(--bg);stroke-width:3px">'+d.plan+'</text>'; });
   if (G.route){
     o += '<polyline class="p-route" points="'+G.route.map(function(q){ return q[0]*S+','+q[1]*S; }).join(' ')+'"/>';
-    o += '<text class="p-routetxt" x="'+(4.55*S+36)+'" y="'+(3.55*S)+'" transform="rotate(-90 '+(4.55*S+36)+' '+(3.55*S)+')">caminho livre 0,60</text>';
+    o += '<text class="p-routetxt" x="'+(4.45*S-26)+'" y="'+(3.30*S)+'" transform="rotate(-90 '+(4.45*S-26)+' '+(3.30*S)+')">passagem ~0,40</text>';
   }
   if (G.seats){
     G.seats.forEach(function(q, i){ o += '<circle class="p-seat" cx="'+q[0]*S+'" cy="'+q[1]*S+'" r="12"/><text class="p-seattxt" x="'+q[0]*S+'" y="'+(q[1]*S+4.5)+'">'+(i+1)+'</text>'; });
