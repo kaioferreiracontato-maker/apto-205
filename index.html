@@ -418,7 +418,7 @@ function geometry(id){
 /* itens fixos mostrados na planta e nas fotos */
 var FIX = [
   {k:'kitchen',x0:2.42,y0:0,x1:4.65,y1:.60,z:.90,core:3.24},
-  {k:'dish',x0:3.21,y0:.07,x1:3.76,y1:.57,z0:.245,z1:.84},
+  {k:'dish',x0:3.21,y0:.07,x1:3.76,y1:.57,z0:.045,z1:.64},   // no chão (pés de 4,5 cm), para caber a gaveta de talheres em cima
   {k:'vanity',x0:0,y0:0,x1:.80,y1:.49,z:.85},
   {k:'vanity',x0:2.55,y0:3.28,x1:3.05,y1:3.95,z:.85},
   {k:'toilet',x0:.98,y0:1.06,x1:1.60,y1:1.44,side:'x1'},
@@ -1218,7 +1218,13 @@ function init3d(){
         // gabinete suspenso: gavetão sob o cooktop, nicho da lava-louças ao lado da pia, duas portas sob a pia
         var ds = FIX.filter(function(q){ return q.k === 'dish'; })[0], lw0 = ds ? ds.x0-.01 : c0, lw1 = ds ? ds.x1+.01 : dx, sm = (lw1+f.x1-.01)/2;
         box(gFix, f.x0+.01,f.y0+.02,lw0,fr, zb,zt, M.cab); box(gFix, lw1,f.y0+.02,f.x1-.01,fr, zb,zt, M.cab);
-        if (ds){ box(gFix, lw0,f.y0+.02,lw1,fr, 0,ds.z0-.005, M.cab); box(gFix, lw0,f.y0+.02,lw1,f.y0+.04, ds.z0,zt, M.cabGap, {cast:false}); }
+        if (ds){                                     // gaveta de talheres em cima da lava-louças, alinhada com o primeiro gavetão do cooktop
+          var gz = zt - (zt-zb)/3;
+          box(gFix, lw0,f.y0+.02,lw1,f.y0+.04, 0,gz, M.cabGap, {cast:false});
+          box(gFix, lw0,f.y0+.02,lw1,fr, gz,zt, M.cab);
+          box(gFix, lw0+.006,fr,lw1-.006,fr+.012, zt-.024,zt-.004, M.chrome, {cast:false});
+          box(gFix, lw0,fr,lw1,fr+.003, gz-.002,gz+.002, M.cabGap, {cast:false});
+        }
         for (k=0;k<3;k++){                           // três gavetões sob o cooktop
           var zz = zt - k*(zt-zb)/3;
           box(gFix, f.x0+.016,fr,lw0-.006,fr+.012, zz-.024,zz-.004, M.chrome, {cast:false});
