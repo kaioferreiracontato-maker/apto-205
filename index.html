@@ -335,6 +335,7 @@ function geometry(id){
         [5.15,4.82],[4.90,4.18],[4.98,3.48],[5.50,2.98], [4.30,2.21], [6.62,6.86],[6.62,7.26],[5.465,7.15]];
       route = [[6.45,2.18],[5.40,2.36],[4.50,2.60],[4.45,4.52],[3.80,4.52]];   // sobra ~40 cm entre a roda e a mesa do computador / vaso
     }
+    if (id === 'origC' && showExtras && !showMeet) mov = mov.filter(function(f){ return !(f.k === 'chair2' && f.cx < 4.5); });   // a cadeira do computador vira uma das extras
     if (id === 'origC' && showExtras && !showMeet) mov.push(          // cadeiras extras no lado vazio da mesa, a 60 cm uma da outra
       {k:'chair2',cx:5.54,cy:3.35,r:.22,ang:0,extra:true,nm:'Cadeira extra (assento a 0,47)'}, {k:'chair2',cx:5.54,cy:3.95,r:.22,ang:0,extra:true,nm:'Cadeira extra (assento a 0,47)'});
   } else {
@@ -378,6 +379,7 @@ function geometry(id){
     if (dk && ov && !ex) gap(dk.x1,ov.cy, ov.cx-ov.rx,ov.cy);           // estante ↔ mesa de jantar
     var hc = mov.filter(function(f){ return f.k === 'chair2' && f.cx < 5; })[0];
     if (hc && ex) gap(hc.cx+.23,ex.cy, ex.cx-.23,ex.cy);                // cadeira do computador ↔ cadeira extra (encosto com encosto)
+    else if (dk && ex) gap(dk.x1,ex.cy, ex.cx-.23,ex.cy);               // mesa do computador ↔ encosto da cadeira extra
     else if (hc && ov){ var hdy = (hc.cy-ov.cy)/ov.ry, hxe = ov.cx - ov.rx*Math.sqrt(Math.max(0, 1-hdy*hdy)); gap(hc.cx+.23,hc.cy, hxe,hc.cy); }   // encosto da cadeira do computador ↔ mesa de jantar
     if (ov && sf && sf.y0 > ov.cy) gap(ov.cx,ov.cy+ov.ry, ov.cx,sf.y0); // mesa ↔ sofá
     var tp = mov.filter(function(f){ return f.k === 'ott'; })[0];
