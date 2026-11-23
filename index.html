@@ -39,6 +39,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;flex:1;min-
 .stage > div{position:absolute;inset:0}
 #plan{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 #plan.drag{cursor:grabbing}
+.p-route{fill:none;stroke:#17a394;stroke-opacity:.16;stroke-width:60;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.p-routetxt{font:600 12px var(--font-body);fill:#17a394;text-anchor:middle}
+.p-seat{fill:var(--accent);stroke:var(--paper);stroke-width:2}
+.p-seattxt{font:700 12px var(--font-body);fill:#fff;text-anchor:middle;font-variant-numeric:tabular-nums;pointer-events:none}
+.p-seatsum{font:700 22px var(--font-body);fill:var(--accent);text-anchor:middle}
 .p-iso{fill:var(--paper);fill-opacity:.8;fill-rule:evenodd;pointer-events:none}
 .p-isoline{fill:none;stroke:var(--accent);stroke-width:2.4;pointer-events:none}
 #rooms-body tr[data-room]{cursor:pointer}
@@ -154,7 +159,8 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
           <button class="btn" id="btn-furn2d" aria-pressed="true">Móveis</button>
           <button class="btn" id="btn-dims2d" aria-pressed="false">Dimensões</button>
           <button class="btn" id="btn-gaps2d" aria-pressed="false">Passagens</button>
-          <button class="btn" id="btn-extras2d" aria-pressed="false">Cadeiras extras</button></div>
+          <button class="btn" id="btn-extras2d" aria-pressed="false">Cadeiras extras</button>
+          <button class="btn" id="btn-meet2d" aria-pressed="false">Reunião</button></div>
       </section>
 
       <section id="sec-view" hidden>
@@ -189,6 +195,7 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
         <label class="chk"><input type="checkbox" id="chk-dims"> Mostrar dimensões</label>
         <label class="chk"><input type="checkbox" id="chk-gaps"> Mostrar passagens (espaço livre no chão)</label>
         <label class="chk"><input type="checkbox" id="chk-extras"> Mostrar cadeiras extras</label>
+        <label class="chk"><input type="checkbox" id="chk-meet"> Simular reunião (cadeiras em roda)</label>
         <label class="chk"><input type="checkbox" id="chk-auto" checked> Esconder o que fica na frente</label>
         <label class="chk"><input type="checkbox" id="chk-cut"> Cortar paredes a 1,20 m</label>
         <label class="chk"><input type="checkbox" id="chk-doors" checked> Portas dos quartos e banheiros fechadas</label>
@@ -235,9 +242,10 @@ var DESC = {
   origC: 'Opção A2. Mesma parede da A, com a sala reorganizada. Ripado de madeira de 1,10 m logo depois da porta, servindo de encosto para o banco do jantar; o banco segue em L pela parede até perto do sofá, com mesa oval de 1,20 × 0,76 m no sentido do sofá e uma cadeira estofada do lado livre. Sofá-cama de 2,10 m na mesma parede e, na varanda, o banco na cor do sofá com o arco pintado atrás. Na parede do banheiro, estante aberta de tubos pretos com prateleiras de madeira de 28 cm; a prateleira a 0,75 m serve de mesa e os bancos cabem embaixo. Bancada da cozinha a 0,75 m, com dois bancos na altura de cadeira (assento a 47 cm), que também servem na mesa e na varanda. Móvel gourmet com cafeteira na parede do quarto. Pintura proposta: Castelo do Deserto nas paredes, Chocolate Quente na parede do sofá, na faixa do teto e no arco, Pomar Verde na parede da TV e no corredor inteiro. Na cozinha, ripado entre a bancada e a lava-roupas e Chocolate Quente na parede da bancada.',
   recuoA: 'Opção B. A parede entre o quarto e a sala recua 60 cm, alinhada com a parede do banheiro, só até a linha da varanda, e o nicho vira canto alemão. A TV de 50" vai para a parede do banheiro e o sofá-cama Marad de 2,10 m para a parede do vizinho. A sala ganha 0,60 m² e o quarto perde o mesmo. A porta do quarto fica de frente para a do banheiro.'
 };
+var showMeet = false;                              // simulação de reunião: cadeiras em roda e lugares numerados
 var showExtras = false;                            // duas cadeiras a mais no lado vazio da mesa, só quando tem visita
 function geometry(id){
-  var recuo = id === 'recuoA';
+  var recuo = id === 'recuoA', seats = null, route = null;
   var walls = [
     {x0:-.15,y0:-.15,x1:5.45,y1:0, ops:[win(2.18,3.30,1.5)]},
     {x0:-.15,y0:0,x1:0,y1:5.10},
@@ -317,7 +325,16 @@ function geometry(id){
       {k:'plant',cx:4.13,cy:4.03,r:.11,h:.75},
       {k:'plant',cx:4.76,cy:6.04,r:.055,h:.24,z:.65},
       {k:'plant',cx:4.44,cy:1.78,r:.055,h:.22,z:1.05});
-    if (id === 'origC' && showExtras) mov.push(          // cadeiras extras no lado vazio da mesa, a 60 cm uma da outra
+    if (id === 'origC' && showMeet){                     // reunião: cadeira do computador vira para a roda, entram mais três; caminho de 60 cm da porta ao corredor fica livre
+      mov = mov.filter(function(f){ return !(f.k === 'chair2' && f.cx < 4.5); });
+      [[5.12,4.75],[5.15,4.15],[5.25,3.58],[5.55,3.05]].forEach(function(q){
+        mov.push({k:'chair2',cx:q[0],cy:q[1],r:.22,ang:Math.atan2(4.45-q[1], 5.45-q[0]),meet:true,nm:'Cadeira da roda (assento a 0,47)'});
+      });
+      seats = [[6.32,4.93],[6.32,5.60],[6.32,6.27], [6.17,2.90],[6.70,3.30],[6.70,3.88], [6.12,4.08], [4.75,5.31],[4.75,5.89],
+        [5.12,4.75],[5.15,4.15],[5.25,3.58],[5.55,3.05], [4.30,2.21], [6.62,6.86],[6.62,7.26],[5.60,6.98]];
+      route = [[6.45,2.18],[5.40,2.28],[4.62,2.55],[4.55,4.52],[3.80,4.52]];
+    }
+    if (id === 'origC' && showExtras && !showMeet) mov.push(          // cadeiras extras no lado vazio da mesa, a 60 cm uma da outra
       {k:'chair2',cx:5.54,cy:3.35,r:.22,ang:0,extra:true,nm:'Cadeira extra (assento a 0,47)'}, {k:'chair2',cx:5.54,cy:3.95,r:.22,ang:0,extra:true,nm:'Cadeira extra (assento a 0,47)'});
   } else {
     var A = id === 'recuoA';
@@ -393,7 +410,7 @@ function geometry(id){
   ];
   var solids = [], ops = [];
   walls.forEach(function(w){ var p = pieces(w); p.solids.forEach(function(s){ s.shaft = !!w.shaft; solids.push(s); }); ops = ops.concat(p.ops); });
-  return {id:id, recuo:recuo, walls:walls, doors:doors, rooms:rooms, mov:mov, gaps:gaps, solids:solids, ops:ops, ghost:ghost, notes:notes,
+  return {seats:seats, route:route, id:id, recuo:recuo, walls:walls, doors:doors, rooms:rooms, mov:mov, gaps:gaps, solids:solids, ops:ops, ghost:ghost, notes:notes,
           verandaWallFrom: recuo ? 5.95 : 5.10};
 }
 /* itens fixos mostrados na planta e nas fotos */
@@ -504,6 +521,14 @@ function drawPlan(){
   G.ghost.forEach(function(g){ o += R(g,'p-ghost'); });
   G.notes.forEach(function(n){ o += '<text class="p-note" x="'+n.x*S+'" y="'+n.y*S+'">'+n.t+'</text>'; });
   dimItems().forEach(function(f,i){ if (!dimOn[i]) return; var d = dimsOf(f); o += '<text class="p-note" x="'+d.x*S+'" y="'+(d.y*S+4)+'" style="paint-order:stroke;stroke:var(--bg);stroke-width:3px">'+d.plan+'</text>'; });
+  if (G.route){
+    o += '<polyline class="p-route" points="'+G.route.map(function(q){ return q[0]*S+','+q[1]*S; }).join(' ')+'"/>';
+    o += '<text class="p-routetxt" x="'+(4.55*S+36)+'" y="'+(3.55*S)+'" transform="rotate(-90 '+(4.55*S+36)+' '+(3.55*S)+')">caminho livre 0,60</text>';
+  }
+  if (G.seats){
+    G.seats.forEach(function(q, i){ o += '<circle class="p-seat" cx="'+q[0]*S+'" cy="'+q[1]*S+'" r="12"/><text class="p-seattxt" x="'+q[0]*S+'" y="'+(q[1]*S+4.5)+'">'+(i+1)+'</text>'; });
+    o += '<text class="p-seatsum" x="'+(5.70*S)+'" y="'+(-0.18*S)+'">'+G.seats.length+' pessoas sentadas</text>';
+  }
   if (showGaps) G.gaps.forEach(function(q){
     var len = Math.hypot(q.x1-q.x0, q.y1-q.y0), hz = Math.abs(q.y1-q.y0) < .01, mx = (q.x0+q.x1)/2*S, my = (q.y0+q.y1)/2*S, c = 'p-gap' + (q.w ? ' p-gapw' : '');
     o += '<line class="'+c+'" x1="'+q.x0*S+'" y1="'+q.y0*S+'" x2="'+q.x1*S+'" y2="'+q.y1*S+'"/>';
@@ -661,6 +686,13 @@ $('layout').addEventListener('change', function(){ setLayout(this.value); });
 $('chk-dims').addEventListener('change', function(){ setDims(this.checked); });
 $('btn-dims2d').addEventListener('click', function(){ setDims(!dimAll); });
 $('chk-gaps').addEventListener('change', function(){ setGaps(this.checked); });
+function setMeet(on){
+  showMeet = on; $('chk-meet').checked = on; $('btn-meet2d').setAttribute('aria-pressed', on);
+  if (on && $('layout').value !== 'origC'){ $('layout').value = 'origC'; }
+  G = geometry($('layout').value); dimOn = {}; drawTable(); drawPlan(); if (three) three.rebuild();
+}
+$('chk-meet').addEventListener('change', function(){ setMeet(this.checked); });
+$('btn-meet2d').addEventListener('click', function(){ setMeet(!showMeet); });
 function setExtras(on){ showExtras = on; $('chk-extras').checked = on; $('btn-extras2d').setAttribute('aria-pressed', on); G = geometry(G.id); dimOn = {}; drawPlan(); if (three) three.rebuild(); }
 $('chk-extras').addEventListener('change', function(){ setExtras(this.checked); });
 $('btn-extras2d').addEventListener('click', function(){ setExtras(!showExtras); });
@@ -1706,6 +1738,14 @@ function init3d(){
         plant(gMov, ax, f.y1-.22, lz, .055, .22);
         glow(f.x0+.30, cy, 1.80, .14, 2.4); glow(f.x0+.20, cy, .45, .10, 1.6);
       }
+    });
+    if (G.seats) G.seats.forEach(function(q, i){        // reunião: número de cada lugar flutuando sobre o assento
+      var cv = document.createElement('canvas'); cv.width = cv.height = 96; var g = cv.getContext('2d');
+      g.fillStyle = 'rgba(232,118,62,.95)'; g.beginPath(); g.arc(48,48,40,0,Math.PI*2); g.fill();
+      g.fillStyle = '#fff'; g.font = '700 46px Inter, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(i+1), 48, 50);
+      var tx = new T.CanvasTexture(cv); tx.encoding = T.sRGBEncoding;
+      var sp = new T.Sprite(new T.SpriteMaterial({map:tx, depthTest:false, transparent:true, toneMapped:false}));
+      sp.position.set(q[0], 1.0, q[1]); sp.scale.set(.2, .2, 1); sp.renderOrder = 12; gMov.add(sp);
     });
   }
   function buildDims(){
