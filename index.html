@@ -321,7 +321,7 @@ function geometry(id){
       {k:'bench',x0:6.41,y0:6.65,x1:6.86,y1:7.47,back:'x1',bh:.66,pillows:true,pet:true,nm:'Banco da varanda (assento a 0,47, caminha embaixo)'},
       {k:'pendant',type:'globe',cx:6.62,cy:7.03,z:1.70},
       {k:'pendant',type:'sconce',cx:6.86,cy:6.74,z:1.42},
-      {k:'armchair',x0:5.10,y0:6.66,x1:5.83,y1:7.45},   // poltrona Mona (MadeiraMadeira 441972390): madeira maciça, linho terracota; ficha diz 73 L × 78–79 P × 85–90 A, assento 59 × 45 — uso a maior
+      {k:'tub',x0:5.085,y0:6.86,x1:5.845,y1:7.43},   // poltrona concha de veludo verde-musgo, pés palito de madeira (MadeiraMadeira 984441164, MOBLAN): 76 L × 57 P × 82 A, assento 44 × 41 a 0,45. A Mona era {k:'armchair',x0:5.10,y0:6.66,x1:5.83,y1:7.45}
       {k:'plant',cx:4.13,cy:4.03,r:.11,h:.75},
       {k:'plant',cx:4.76,cy:6.04,r:.055,h:.24,z:.65},
       {k:'plant',cx:4.44,cy:1.78,r:.055,h:.22,z:1.05});
@@ -332,7 +332,7 @@ function geometry(id){
         mov.push({k:'chair2',cx:q[0],cy:q[1],r:.22,ang:Math.atan2(4.30-q[1], 5.70-q[0]),meet:true,nm:'Cadeira da roda (assento a 0,47)'});
       });
       seats = [[6.32,4.93],[6.32,5.60],[6.32,6.27], [6.17,2.90],[6.70,3.30],[6.70,3.88], [6.12,4.08], [5.06,5.31],[5.06,5.89],
-        [5.15,4.82],[4.90,4.18],[4.98,3.48],[5.50,2.98], [4.30,2.21], [6.62,6.86],[6.62,7.26],[5.465,7.00]];
+        [5.15,4.82],[4.90,4.18],[4.98,3.48],[5.50,2.98], [4.30,2.21], [6.62,6.86],[6.62,7.26],[5.465,7.12]];
       route = [[6.45,2.18],[5.40,2.36],[4.50,2.60],[4.45,4.52],[3.80,4.52]];   // sobra ~40 cm entre a roda e a mesa do computador / vaso
     }
     if (id === 'origC' && showExtras && !showMeet) mov.push(          // cadeiras extras no lado vazio da mesa, a 60 cm uma da outra
@@ -386,7 +386,7 @@ function geometry(id){
     gap(3.95,3.30, 6.95,3.30, true);                                    // largura da sala no jantar (parede a parede)
     if (!recuo) gap(4.55,5.80, 6.95,5.80, true);                        // largura da sala na TV (parede a parede)
     if (gm && rd) gap(gm.x1,rd.cy, rd.cx-rd.r,rd.cy);                   // móvel do café ↔ mesa redonda
-    var sw = first('armchair'), pb = mov.filter(function(f){ return f.k === 'bench' && f.pet; })[0];
+    var sw = first('tub') || first('armchair'), pb = mov.filter(function(f){ return f.k === 'bench' && f.pet; })[0];
     if (gm && sw) gap(gm.x1,(sw.y0+sw.y1)/2, sw.x0,(sw.y0+sw.y1)/2);    // aparador do café ↔ poltrona
     if (sw && pb) gap(sw.x1,(sw.y0+sw.y1)/2, pb.x0,(sw.y0+sw.y1)/2);    // poltrona ↔ banco da varanda
     if (sb && wds[0]) gap(1.5,wds[0].y1, 1.5,sb.y0);                    // suíte: guarda-roupa ↔ cama
@@ -449,7 +449,7 @@ var G = geometry('origC');
 
 /* ---------- medidas dos móveis: [nome, altura, altura do rótulo no 3D] ---------- */
 var KIND = {sofa:['Sofá-cama (assento a 0,46)',.66], bench:['Banco (assento a 0,47)',null], oval:['Mesa oval',null], table:['Mesa',.76], chair:['Cadeira (assento a 0,50)',.85],
-  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], ott:['Pufe (apoio de pés)',.42], chair2:['Cadeira de encosto de madeira (assento a 0,47)',.80], swing:['Cadeira suspensa de lona (barra a 1,10)',1.10,1.65], armchair:['Poltrona Mona (assento a 0,45)',.90], ac:['Ar-condicionado split (0,80 × 0,29, a 2,12 do piso)',0,2.6], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
+  stool:['Banqueta (assento a 0,75)',null], bar:['Bancada divisória com forno',null], kcab:['Armário da cozinha (parede do banheiro)',1.05,1.3], pent:['Penteadeira',.75,1.25], pouf:['Pufe',.42], ott:['Pufe (apoio de pés)',.42], chair2:['Cadeira de encosto de madeira (assento a 0,47)',.80], swing:['Cadeira suspensa de lona (barra a 1,10)',1.10,1.65], armchair:['Poltrona Mona (assento a 0,45)',.90], tub:['Poltrona concha de veludo (assento a 0,45)',.82], ac:['Ar-condicionado split (0,80 × 0,29, a 2,12 do piso)',0,2.6], tv:['TV 43" (0,97 × 0,56)',0,1.8], desk:['Estante: prateleira-mesa',.75,1.05], gourmet:['Aparador do café (aberto)',.90],
   rack:['Aparador suspenso da TV',.62,1.0], ripado:['Ripado',2.5,2.2], round:['Mesa redonda',null], fridge:['Geladeira',1.86,2.05], washer:['Lava-roupas',.89],
   bed:['Cama',.50], wardrobe:['Guarda-roupa',2.40,2.2], rug:['Tapete',0], hang:['Prateleiras suspensas',0,2.25], kitchen:['Bancada da cozinha (pedra)',.90,1.15], dish:['Lava-louças Midea 8 serviços',.595,.62]};
 var dimAll = false, dimOn = {};
@@ -913,6 +913,7 @@ function init3d(){
     iron: std({color:0x2a2826, roughness:.45, metalness:.6, env:.6}),
     globe: new T.MeshBasicMaterial({color:0xfff3df}), tvglass: std({color:0x15181c, roughness:.05, env:1.2}),
     terra: std({color:0x93513a, roughness:.9, env:.2}),
+    moss: std({color:0x2c3d24, roughness:.85, env:.3}),
     linenT: std({color:0xb0654a, map:TX.linen, roughness:1, env:.25}),
     paintT: std({color:0x8c4b34, roughness:.95, env:.2}), paintG: std({color:0x585e41, roughness:.95, env:.2}),
     nicho: std({color:0xcbb994, roughness:.9, emissive:0x4a3718}), drawer: std({color:0x8b8e94, roughness:.55}), drawerGap: std({color:0x55585e, roughness:.8}),
@@ -1627,6 +1628,25 @@ function init3d(){
           var bd = new T.Mesh(new T.SphereGeometry(.022, 10, 8), M.gold); bd.scale.set(.7, .8, 1.5); bd.position.set(ox2, 1.405+k*.03, y); gMov.add(bd);
         });
         glow(f.xw-.35, (qa+qb+.70)/2, 1.45, .16, 2.6);
+      }
+      else if (f.k==='tub'){                       // poltrona concha: encosto curvo que vira braço, assento redondo, quatro pés palito abertos; frente para y0
+        var tw = f.x1-f.x0, td = f.y1-f.y0, tg = new T.Group(); tg.position.set((f.x0+f.x1)/2, 0, (f.y0+f.y1)/2); gMov.add(tg);
+        var erx = tw/2-.045, ery = td/2-.045, zb = .30, nseg = 30, a0 = Math.PI/2-2.25, a1 = Math.PI/2+2.25;
+        for (i=0;i<nseg;i++){                                                                          // casca: gomos ao longo de uma elipse, mais alta atrás
+          var am = a0+(a1-a0)*(i+.5)/nseg, px = erx*Math.cos(am), py = ery*Math.sin(am)+.01;
+          var tx2 = -erx*Math.sin(am), ty2 = ery*Math.cos(am), sl = Math.hypot(tx2, ty2)*(a1-a0)/nseg*1.08;
+          var hz = .64 + .18*Math.pow((1+Math.sin(am))/2, .8);
+          var sm = new T.Mesh(new T.BoxGeometry(sl, hz-zb, .09), M.moss); sm.position.set(px, (zb+hz)/2, py); sm.rotation.y = Math.atan2(-ty2, tx2);
+          sm.castShadow = true; sm.receiveShadow = true; tg.add(sm);
+          var cap = new T.Mesh(new T.CylinderGeometry(.045, .045, sl, 8), M.moss); cap.rotation.z = Math.PI/2; cap.position.set(0, 0, 0);
+          var cw = new T.Group(); cw.position.set(px, hz, py); cw.rotation.y = Math.atan2(-ty2, tx2); cw.add(cap); tg.add(cw);   // borda arredondada no topo
+        }
+        var seat = new T.Mesh(new T.CylinderGeometry(1, 1, .15, 28), M.moss); seat.scale.set(erx-.03, 1, ery-.02); seat.position.set(0, zb+.075, -.02); seat.castShadow = true; tg.add(seat);
+        var base = new T.Mesh(new T.CylinderGeometry(1, 1, .04, 28), M.moss); base.scale.set(erx+.03, 1, ery+.03); base.position.set(0, zb+.02, .005); tg.add(base);
+        [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(function(s){                                            // pés palito de madeira, abertos
+          rod(tg, s[0]*(erx-.10),s[1]*(ery-.08),zb, s[0]*(erx-.02),s[1]*(ery+.0),0, .018, M.honey, {r2:.011, seg:10});
+        });
+        if (f.y0 > f.y1) tg.rotation.y = Math.PI;
       }
       else if (f.k==='armchair'){                  // poltrona Mona: laterais de madeira maciça com pé dianteiro e traseiro inclinados, braço reto, almofadas de linho terracota; frente para y0
         var aw = f.x1-f.x0, ad = f.y1-f.y0, ag = new T.Group(); ag.position.set((f.x0+f.x1)/2, 0, (f.y0+f.y1)/2); gMov.add(ag);
