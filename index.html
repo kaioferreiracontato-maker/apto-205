@@ -140,6 +140,7 @@ label.chk input{accent-color:var(--accent);width:16px;height:16px}
         <select id="layout" aria-label="Layout">
           <option value="orig">A · parede original, TV perto da varanda</option>
           <option value="origC" selected>A2 · ripado, home office e varanda gourmet</option>
+          <option value="origV">A3 · jantar na varanda</option>
           <option value="recuoA">B · parede recuada, canto alemão</option>
         </select>
       </section>
@@ -240,6 +241,7 @@ function door(a,b){ return {a:a,b:b,sill:0,head:2.1,type:'door'}; }
 var DESC = {
   orig: 'Opção A. Parede como a construtora entrega. A TV de 50" fica na parede do quarto, deslocada para o lado da varanda, com o sofá-cama Marad de 2,10 m em frente. Mesa de 4 lugares junto ao banheiro e bancada com 2 banquetas no vão da cozinha, que deixa 0,60 m de passagem.',
   origC: 'Opção A2. Mesma parede da A, com a sala reorganizada. Ripado de madeira de 1,10 m logo depois da porta, servindo de encosto para o banco do jantar; o banco segue em L pela parede até perto do sofá, com mesa oval de 1,20 × 0,76 m no sentido do sofá e uma cadeira estofada do lado livre. Sofá-cama de 2,10 m na mesma parede e, na varanda, o banco na cor do sofá com o arco pintado atrás. Na parede do banheiro, estante aberta de tubos pretos com prateleiras de madeira de 28 cm; a prateleira a 0,75 m serve de mesa e os bancos cabem embaixo. Bancada da cozinha a 0,75 m, com dois bancos na altura de cadeira (assento a 47 cm), que também servem na mesa e na varanda. Móvel gourmet com cafeteira na parede do quarto. Pintura proposta: Castelo do Deserto nas paredes, Chocolate Quente na parede do sofá, na faixa do teto e no arco, Pomar Verde na parede da TV e no corredor inteiro. Na cozinha, ripado entre a bancada e a lava-roupas e Chocolate Quente na parede da bancada.',
+  origV: 'Opção A3, só para comparar. Igual à A2, mas o jantar vai para a varanda: mesa de 0,80 × 0,90 m encostada no banco da cachorra, que vira o lugar de dois, e duas cadeiras do outro lado, de costas para o aparador do café. Para caber, o sofá sobe 65 cm em direção à entrada e fica 55 cm descentrado da TV, que não muda de lugar. O canto do jantar da entrada fica livre, só com o ripado e o banquinho, e a poltrona sai.',
   recuoA: 'Opção B. A parede entre o quarto e a sala recua 60 cm, alinhada com a parede do banheiro, só até a linha da varanda, e o nicho vira canto alemão. A TV de 50" vai para a parede do banheiro e o sofá-cama Marad de 2,10 m para a parede do vizinho. A sala ganha 0,60 m² e o quarto perde o mesmo. A porta do quarto fica de frente para a do banheiro.'
 };
 var showMeet = false;                              // simulação de reunião: cadeiras em roda e lugares numerados
@@ -295,10 +297,10 @@ function geometry(id){
     estar = {wood:true,name:['Estar / jantar'],area:12.80,dims:[3.00,4.25],lab:[5.42,4.42],
       pts:[[3.95,1.75],[6.95,1.75],[6.95,6.00],[4.55,6.00],[4.55,4.95],[2.98,4.95],[2.98,4.10],[3.95,4.10]]};
     quarto = {name:['Quarto'],area:7.32,dims:[3.05,2.40],lab:[2.70,6.22], pts:[[1.35,5.10],[4.40,5.10],[4.40,7.50],[1.35,7.50]]};
-    var sy = id === 'orig' ? 4.50 : 4.55;            // sofá-cama Marad: 2,10 × 0,88 m
+    var sy = id === 'orig' ? 4.50 : id === 'origV' ? 3.90 : 4.55, osy = id === 'origV' ? 4.55 : sy;   // A3: sofá sobe; TV e pufes ficam onde estão            // sofá-cama Marad: 2,10 × 0,88 m
     mov.push({k:'bed',x0:1.35,y0:5.10,x1:3.24,y1:5.90}, {k:'wardrobe',x0:3.86,y0:5.93,x1:4.40,y1:7.50,front:'x0'},
-      {k:'rack',x0:4.55,y0:4.95,x1:4.83,y1:(id === 'origC' ? 6.27 : 6.20),tvc:sy+1.05},
-      {k:'ott',x0:4.57,y0:sy+.57,x1:4.93,y1:sy+.95}, {k:'ott',x0:4.57,y0:sy+1.15,x1:4.93,y1:sy+1.53},
+      {k:'rack',x0:4.55,y0:4.95,x1:4.83,y1:(id === 'orig' ? 6.20 : 6.27),tvc:osy+1.05},
+      {k:'ott',x0:4.57,y0:osy+.57,x1:4.93,y1:osy+.95}, {k:'ott',x0:4.57,y0:osy+1.15,x1:4.93,y1:osy+1.53},
       {k:'rug',x0:4.98,y0:sy+.18,x1:6.22,y1:sy+1.92},
       {k:'sofa',x0:5.98,y0:sy,x1:6.86,y1:sy+2.10},
       {k:'ac',x0:6.74,y0:sy+.65,x1:6.95,y1:sy+1.45,z:2.12,hh:.29});
@@ -334,6 +336,17 @@ function geometry(id){
       seats = [[6.32,4.93],[6.32,5.60],[6.32,6.27], [6.17,2.90],[6.70,3.30],[6.70,3.88], [6.12,4.08], [5.06,5.31],[5.06,5.89],
         [5.15,4.82],[4.90,4.18],[4.98,3.48],[5.50,2.98], [4.30,2.21], [6.62,6.86],[6.62,7.26],[5.465,7.15]];
       route = [[6.45,2.18],[5.40,2.36],[4.50,2.60],[4.45,4.52],[3.80,4.52]];   // sobra ~40 cm entre a roda e a mesa do computador / vaso
+    }
+    if (id === 'origV'){                                 // A3: jantar na varanda; sai o jantar da entrada e a poltrona
+      mov = mov.filter(function(f){ return !(f.k === 'oval' || f.k === 'achair' || (f.k === 'bench' && f.x0 === 6.50) || (f.k === 'chair2' && f.cx > 5) || (f.k === 'pendant' && f.type === 'bar')); });
+      mov.forEach(function(f){
+        if (f.k === 'green') f.y1 = sy;
+        if (f.k === 'bench' && f.x0 === 5.85) f.nm = 'Banco da entrada (assento a 0,47)';
+        if (f.k === 'bench' && f.pet) f.nm = 'Banco da varanda: dois lugares do jantar (assento a 0,47, caminha embaixo)';
+        if (f.k === 'pendant' && f.type === 'globe'){ f.cx = 5.96; f.cy = 7.00; f.z = 1.55; }
+      });
+      mov.push({k:'table',x0:5.56,y0:6.55,x1:6.36,y1:7.45,nm:'Mesa de jantar da varanda (0,80 × 0,90)'},
+        {k:'chair2',cx:5.32,cy:6.77,r:.22,ang:0,nm:'Cadeira do jantar (assento a 0,47)'}, {k:'chair2',cx:5.32,cy:7.23,r:.22,ang:0,nm:'Cadeira do jantar (assento a 0,47)'});
     }
     if (id === 'origC' && showExtras && !showMeet) mov = mov.filter(function(f){ return !(f.k === 'chair2' && f.cx < 4.5); });   // a cadeira do computador vira uma das extras
     if (id === 'origC' && showExtras && !showMeet) mov.push(          // cadeiras extras no lado vazio da mesa, a 60 cm uma da outra
@@ -390,6 +403,9 @@ function geometry(id){
     if (gm && rd) gap(gm.x1,rd.cy, rd.cx-rd.r,rd.cy);                   // móvel do café ↔ mesa redonda
     var sw = first('achair') || first('tub') || first('armchair'), pb = mov.filter(function(f){ return f.k === 'bench' && f.pet; })[0];
     if (gm && sw) gap(gm.x1,(sw.y0+sw.y1)/2, sw.x0,(sw.y0+sw.y1)/2);    // aparador do café ↔ poltrona
+    var vt = mov.filter(function(f){ return f.k === 'table' && f.y0 > 6; })[0];
+    if (vt && sf) gap(6.15,sf.y1, 6.15,vt.y0);                         // A3: fim do sofá ↔ mesa da varanda (entrada para o banco)
+    if (vt && gm) gap(gm.x1,6.77, 5.10,6.77);                           // A3: aparador do café ↔ encosto da cadeira
     if (sw && pb) gap(sw.x1,(sw.y0+sw.y1)/2, pb.x0,(sw.y0+sw.y1)/2);    // poltrona ↔ banco da varanda
     if (sb && wds[0]) gap(1.5,wds[0].y1, 1.5,sb.y0);                    // suíte: guarda-roupa ↔ cama
     if (sb && pt && pt.y0 > sb.y1) gap(.9,sb.y1, .9,pt.y0);             // suíte: cama ↔ penteadeira
@@ -1128,7 +1144,7 @@ function init3d(){
     box(gPaint, 6.86,6.384,6.95,6.39, .07,H, M.paintT, {cast:false});
     if (G.id === 'recuoA') box(gPaint, 3.95,1.75,3.956,4.10, .07,H, M.paintG, {cast:false});
     else box(gPaint, 4.55,4.95,4.556,7.50, .07,H, M.paintG, {cast:false});
-    if (G.id === 'origC'){
+    if (G.id === 'origC' || G.id === 'origV'){
       box(gPaint, 6.854,6.59,6.86,7.47, .07,1.70, M.paintT, {cast:false});
       var cg = new T.CircleGeometry(.44, 40, 0, Math.PI); cg.translate(0,-.22,0);
       var ar = new T.Mesh(cg, M.paintT); ar.rotation.y = -Math.PI/2; ar.position.set(6.853, 1.92, 7.03);
